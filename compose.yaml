@@ -8,11 +8,18 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root
-      - POSTGRES_DB=dentogrambase
+      - POSTGRES_DB=dentogrambase  # Creates the database if it doesn't exist
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
 
 volumes:
   postgres_data:
+
