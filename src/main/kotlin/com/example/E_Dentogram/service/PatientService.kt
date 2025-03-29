@@ -17,15 +17,19 @@ class PatientService {
     @Autowired
     lateinit var patientRepository : PatientRepository
 
+    // Que no se abra una tx
     fun allPatients(): List<Patient>? {
+        // patients
         val patient = patientRepository.findAll()
         return patient
     }
 
+    // Que no se abra una tx
     fun getPatient(patientMedicalRecord: Int): Patient {
         return patientRepository.findById(patientMedicalRecord).
-        orElseThrow{ throw RuntimeException("patient $patientMedicalRecord not found")
-        }
+            // debería llegar un 404, le va a llegar un 500
+            // falta tener una excepción que mapee contra un 404
+            orElseThrow { throw RuntimeException("patient $patientMedicalRecord not found") }
     }
 
     fun createPatient(patientRequest: PatientRequest): PatientDTO {
@@ -57,6 +61,8 @@ class PatientService {
             return patientDTO
 
         }catch (e: Exception) {
+        // hay que diferenciar errores de usuario: required => 400
+        // vs. errores de BD (se cayó la base) => 500
             throw RuntimeException("Failed to create patient: ${e.message}")
         }
 
