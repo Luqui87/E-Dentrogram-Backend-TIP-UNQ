@@ -19,9 +19,8 @@ class PatientService {
 
     // Que no se abra una tx
     fun allPatients(): List<Patient>? {
-        // patients
-        val patient = patientRepository.findAll()
-        return patient
+        val patients = patientRepository.findAll()
+        return patients
     }
 
     // Que no se abra una tx

@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface ThoothRepository : JpaRepository<Tooth,Int> {
 
+    fun findByPatientMedicalRecord(medicalRecord: Int): List<Tooth>
+
 }

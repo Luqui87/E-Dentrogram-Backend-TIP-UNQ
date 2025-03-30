@@ -1,10 +1,14 @@
 package com.example.E_Dentogram.controller
 
 import com.example.E_Dentogram.model.Tooth
+import com.example.E_Dentogram.request.ToothRequest
 import com.example.E_Dentogram.service.ToothService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 
@@ -18,6 +22,18 @@ class ToothController{
     fun allTooth(): ResponseEntity<List<Tooth>> {
         val teeth = service.allTooth()
         return ResponseEntity.ok(teeth)
+    }
+
+    @GetMapping("/tooth/{medicalRecord}")
+    fun teeth(@PathVariable medicalRecord: Int): ResponseEntity<List<Tooth>> {
+        val teeth = service.teeth(medicalRecord)
+        return ResponseEntity.ok(teeth)
+    }
+
+    @PutMapping("/update/tooth/{medicalRecord}")
+    fun updateTeeth(@PathVariable medicalRecord: Int,@RequestBody teethRequests: List<ToothRequest>): List<Tooth> {
+        val updatedTeeth = service.updateTeeth(medicalRecord,teethRequests)
+        return updatedTeeth
     }
 
 }

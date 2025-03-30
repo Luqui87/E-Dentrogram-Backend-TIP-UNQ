@@ -30,6 +30,9 @@ class Patient(builder: PatientBuilder) {
     @Column
     var email: String? = builder.email
 
+    @OneToMany(mappedBy = "patient", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    var teeth: MutableList<Tooth>? = builder.teeth
+
 
     class PatientBuilder {
         var dni: Int? = null
@@ -45,6 +48,8 @@ class Patient(builder: PatientBuilder) {
         var telephone: Int? = null
             private set
         var email: String? = null
+            private set
+        var teeth: MutableList<Tooth>? = null
             private set
 
         fun dni(dni: Int) = apply {
@@ -77,6 +82,11 @@ class Patient(builder: PatientBuilder) {
         fun email(email: String) = apply {
             require(isValidEmail(email)) { "The email format is not valid." }
             this.email = email
+        }
+
+        fun teeth(teeth: MutableList<Tooth>) = apply {
+            require(isValidTeeth(teeth)) { "The amount of teeth is not valid." }
+            this.teeth = teeth
         }
 
 
