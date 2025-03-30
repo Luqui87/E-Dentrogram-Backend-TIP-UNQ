@@ -1,5 +1,6 @@
 package com.example.E_Dentogram.controller
 
+import com.example.E_Dentogram.dto.ToothDTO
 import com.example.E_Dentogram.model.Tooth
 import com.example.E_Dentogram.request.ToothRequest
 import com.example.E_Dentogram.service.ToothService
@@ -19,21 +20,23 @@ class ToothController{
     lateinit var service: ToothService
 
     @GetMapping("/allTooth")
-    fun allTooth(): ResponseEntity<List<Tooth>> {
+    fun allTooth(): ResponseEntity<List<ToothDTO>> {
         val teeth = service.allTooth()
         return ResponseEntity.ok(teeth)
     }
 
     @GetMapping("/tooth/{medicalRecord}")
-    fun teeth(@PathVariable medicalRecord: Int): ResponseEntity<List<Tooth>> {
+    fun teeth(@PathVariable medicalRecord: Int): ResponseEntity<List<ToothDTO>> {
         val teeth = service.teeth(medicalRecord)
         return ResponseEntity.ok(teeth)
     }
 
     @PutMapping("/update/tooth/{medicalRecord}")
-    fun updateTeeth(@PathVariable medicalRecord: Int,@RequestBody teethRequests: List<ToothRequest>): List<Tooth> {
+    fun updateTeeth(@PathVariable medicalRecord: Int,@RequestBody teethRequests: List<ToothRequest>): List<ToothDTO> {
         val updatedTeeth = service.updateTeeth(medicalRecord,teethRequests)
         return updatedTeeth
     }
+
+
 
 }

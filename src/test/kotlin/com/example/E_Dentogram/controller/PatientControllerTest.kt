@@ -92,6 +92,7 @@ class PatientControllerTest {
         mockMVC.perform(get("/patient/123"))
             .andDo(print())
             .andExpect(status().isNotFound)
+            .andExpect(status().reason("This patient does not exist"))
     }
 
     @Test
