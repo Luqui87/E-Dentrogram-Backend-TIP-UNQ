@@ -3,7 +3,6 @@ package com.example.E_Dentogram.controller
 
 import com.example.E_Dentogram.dto.PatientDTO
 import com.example.E_Dentogram.model.Patient
-import com.example.E_Dentogram.model.Tooth
 import com.example.E_Dentogram.request.PatientRequest
 import com.example.E_Dentogram.service.PatientService
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,6 +20,12 @@ class PatientController {
     @GetMapping("/allPatients")
     fun allPatients(): ResponseEntity<List<Patient>> {
         val patients = service.allPatients()
+        return ResponseEntity.ok(patients)
+    }
+
+    @GetMapping("/allSimplePatients")
+    fun allSimplePatients(): ResponseEntity<List<PatientRequest>> {
+        val patients = service.allSimplePatients()
         return ResponseEntity.ok(patients)
     }
 

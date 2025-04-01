@@ -4,8 +4,6 @@ import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.repository.PatientRepository
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.hamcrest.collection.IsCollectionWithSize
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -149,6 +147,33 @@ class PatientControllerTest {
             .andExpect(jsonPath("$.birthdate").value("2000-10-12"))
             .andExpect(jsonPath("$.telephone").value("1153276406"))
             .andExpect(jsonPath("$.email").value("lucas@mail.com"))
+    }
+
+    @Test
+    fun `should get one simple patient`(){
+        val patient = Patient.PatientBuilder()
+            .medicalRecord(123)
+            .dni(42421645)
+            .name("Lucas Alvarez")
+            .address("Bragado 1413")
+            .birthdate(LocalDate.of(2000, 10, 12))
+            .telephone(1153276406)
+            .email("lucas@mail.com")
+            .build()
+
+        patientRepository.save(patient)
+
+        mockMVC.perform(get("/allSimplePatients"))
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(1)))
+            .andExpect(jsonPath("$[0].medicalRecord").value(123))
+            .andExpect(jsonPath("$[0].dni").value(42421645))
+            .andExpect(jsonPath("$[0].name").value("Lucas Alvarez"))
+            .andExpect(jsonPath("$[0].address").value("Bragado 1413"))
+            .andExpect(jsonPath("$[0].birthdate").value("2000-10-12"))
+            .andExpect(jsonPath("$[0].telephone").value(1153276406))
+            .andExpect(jsonPath("$[0].email").value("lucas@mail.com"))
     }
 
 }

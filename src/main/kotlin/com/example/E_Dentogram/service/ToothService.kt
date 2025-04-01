@@ -61,7 +61,7 @@ class ToothService {
 
          val saveTeeth = toothRepository.saveAll(updatedTeeth)
 
-        return saveTeeth.map { tooth -> ToothDTO.fromModel(tooth) } // Para que tipe
+        return saveTeeth.map { tooth -> ToothDTO.fromModel(tooth) }
     }
 
 }

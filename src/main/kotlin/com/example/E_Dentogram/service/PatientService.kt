@@ -68,4 +68,17 @@ class PatientService {
         }
 
     }
+
+    fun allSimplePatients(): List<PatientRequest>? {
+        val patients = patientRepository.findAll()
+
+        return patients.map { patient -> PatientRequest(
+            medicalRecord = patient.medicalRecord!!,
+            dni = patient.dni!!,
+            name = patient.name!!,
+            address = patient.address!!,
+            birthdate = patient.birthdate!!,
+            telephone = patient.telephone!!,
+            email = patient.email!!) }
+    }
 }
