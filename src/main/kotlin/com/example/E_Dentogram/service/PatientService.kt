@@ -6,8 +6,10 @@ import com.example.E_Dentogram.repository.PatientRepository
 import com.example.E_Dentogram.request.PatientRequest
 import jakarta.annotation.Generated
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.server.ResponseStatusException
 
 @Generated
 @Service
@@ -19,9 +21,8 @@ class PatientService {
 
     // Que no se abra una tx
     fun allPatients(): List<Patient>? {
-        // patients
-        val patient = patientRepository.findAll()
-        return patient
+        val patients = patientRepository.findAll()
+        return patients
     }
 
     // Que no se abra una tx
@@ -29,7 +30,7 @@ class PatientService {
         return patientRepository.findById(patientMedicalRecord).
             // debería llegar un 404, le va a llegar un 500
             // falta tener una excepción que mapee contra un 404
-            orElseThrow { throw RuntimeException("patient $patientMedicalRecord not found") }
+            orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist") }
     }
 
     fun createPatient(patientRequest: PatientRequest): PatientDTO {
@@ -66,5 +67,18 @@ class PatientService {
             throw RuntimeException("Failed to create patient: ${e.message}")
         }
 
+    }
+
+    fun allSimplePatients(): List<PatientRequest>? {
+        val patients = patientRepository.findAll()
+
+        return patients.map { patient -> PatientRequest(
+            medicalRecord = patient.medicalRecord!!,
+            dni = patient.dni!!,
+            name = patient.name!!,
+            address = patient.address!!,
+            birthdate = patient.birthdate!!,
+            telephone = patient.telephone!!,
+            email = patient.email!!) }
     }
 }

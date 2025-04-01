@@ -37,6 +37,9 @@ dependencies {
 
 	implementation ("org.postgresql:postgresql:42.2.24")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+
+	testImplementation("org.testcontainers:junit-jupiter")
+	testImplementation("org.testcontainers:postgresql")
 }
 
 kotlin {

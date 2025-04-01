@@ -24,6 +24,10 @@ class Tooth(builder: ToothBuilder) {
     @Column
     var center : ToothState? = builder.center
 
+    @ManyToOne
+    @JoinColumn(name = "patient_id", nullable = false)
+    var patient: Patient? = builder.patient
+
 
     class ToothBuilder {
         var number: Int? = null
@@ -37,6 +41,8 @@ class Tooth(builder: ToothBuilder) {
         var left: ToothState? = null
             private set
         var center: ToothState? = null
+            private set
+        var patient: Patient? = null
             private set
 
 
@@ -62,6 +68,10 @@ class Tooth(builder: ToothBuilder) {
 
         fun center(center: ToothState) = apply {
             this.center = center
+        }
+
+        fun patient(patient: Patient) = apply {
+            this.patient = patient
         }
 
         fun build(): Tooth {
