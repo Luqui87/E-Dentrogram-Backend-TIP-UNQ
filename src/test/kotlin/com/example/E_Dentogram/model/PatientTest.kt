@@ -2,6 +2,8 @@ package com.example.E_Dentogram.model
 
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.Assertions.*
+import org.mockito.Mockito
+import org.mockito.Mockito.mock
 import java.time.LocalDate
 import kotlin.test.Test
 
@@ -106,6 +108,35 @@ class PatientTest {
             Patient.PatientBuilder().email("MARCOS DIASEXAMPLE.COM")
         }
         assertEquals("The email format is not valid.", exception.message)
+    }
+
+    @Test
+    fun `should create a patient without any teeth `() {
+        val patientTeeth : MutableList<Tooth> = mutableListOf()
+        val patient = Patient.PatientBuilder().teeth(patientTeeth)
+
+        assertEquals(patientTeeth, patient.teeth)
+    }
+
+    @Test
+    fun `should create a patient with 52 tooth `() {
+        val patientTeeth : MutableList<Tooth> = mock()
+        Mockito.`when`(patientTeeth.size).thenReturn(52)
+
+        val patient = Patient.PatientBuilder().teeth(patientTeeth)
+
+        assertEquals(patientTeeth, patient.teeth)
+    }
+
+    @Test
+    fun `should throw exception for a patient with 53 tooth `() {
+        val patientTeeth : MutableList<Tooth> = mock()
+        Mockito.`when`(patientTeeth.size).thenReturn(53)
+
+        val exception = assertThrows<IllegalArgumentException> {
+            Patient.PatientBuilder().teeth(patientTeeth)
+        }
+        assertEquals("The amount of teeth is not valid.", exception.message)
     }
 
 
