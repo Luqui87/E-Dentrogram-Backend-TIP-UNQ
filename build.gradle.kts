@@ -5,6 +5,7 @@ plugins {
 	id("org.springframework.boot") version "3.4.4"
 	id("io.spring.dependency-management") version "1.1.7"
 	kotlin("plugin.jpa") version "1.9.25"
+	jacoco
 }
 
 group = "com.example"
@@ -57,3 +58,23 @@ allOpen {
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
+
+
+tasks.test {
+	finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+}
+tasks.jacocoTestReport {
+	dependsOn(tasks.test) // tests are required to run before generating the report
+}
+
+
+
+tasks.jacocoTestReport {
+	reports {
+		xml.required=true
+		html.required=true
+	}
+}
+
+
+
