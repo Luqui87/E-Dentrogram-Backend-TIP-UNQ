@@ -41,6 +41,11 @@ dependencies {
 
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:postgresql")
+
+	testImplementation("org.junit.jupiter:junit-jupiter")
+	testImplementation("org.mockito:mockito-core")
+	testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
 kotlin {

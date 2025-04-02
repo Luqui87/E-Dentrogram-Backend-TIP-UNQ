@@ -1,6 +1,7 @@
 package com.example.E_Dentogram.model
 
 import org.junit.jupiter.api.Assertions.*
+import org.mockito.Mockito.mock
 import kotlin.test.Test
 
 
@@ -46,6 +47,15 @@ class ToothTest{
         val tooth = Tooth.ToothBuilder().center(ToothState.HEALTHY)
 
         assertEquals(ToothState.HEALTHY, tooth.center)
+    }
+
+    @Test
+    fun `should create a tooth with a valid Patient`() {
+        val patient = mock(Patient::class.java)
+
+        val tooth = Tooth.ToothBuilder().patient(patient)
+
+        assertEquals(patient, tooth.patient)
     }
 
 
