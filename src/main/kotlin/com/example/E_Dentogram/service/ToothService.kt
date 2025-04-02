@@ -25,15 +25,16 @@ class ToothService {
     @Autowired
     lateinit var patientRepository : PatientRepository
 
-
+    @Transactional(readOnly=true)
     fun allTooth(): List<ToothDTO> {
         val teeth = toothRepository.findAll()
         return teeth.map { tooth -> ToothDTO.fromModel(tooth) }
     }
 
+    @Transactional(readOnly=true)
     fun teeth(medicalRecord: Int): List<ToothDTO> {
         if (patientRepository.existsById(medicalRecord)) {
-            var teeth = toothRepository.findByPatientMedicalRecord(medicalRecord)
+            val teeth = toothRepository.findByPatientMedicalRecord(medicalRecord)
             return teeth.map { tooth -> ToothDTO.fromModel(tooth) }
         }
         else {
@@ -42,7 +43,6 @@ class ToothService {
 
     }
 
-    @Transactional
     fun updateTeeth(medicalRecord: Int, teethRequests: List<ToothRequest>): List<ToothDTO> {
         val patient = patientRepository.findById(medicalRecord)
         .orElseThrow {  throw ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist")}

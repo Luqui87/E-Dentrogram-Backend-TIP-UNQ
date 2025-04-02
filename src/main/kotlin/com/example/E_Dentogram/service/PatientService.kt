@@ -19,13 +19,13 @@ class PatientService {
     @Autowired
     lateinit var patientRepository : PatientRepository
 
-    // Que no se abra una tx
+    @Transactional(readOnly=true)
     fun allPatients(): List<Patient>? {
         val patients = patientRepository.findAll()
         return patients
     }
 
-    // Que no se abra una tx
+    @Transactional(readOnly=true)
     fun getPatient(patientMedicalRecord: Int): Patient {
         return patientRepository.findById(patientMedicalRecord).
             // debería llegar un 404, le va a llegar un 500
@@ -69,6 +69,7 @@ class PatientService {
 
     }
 
+    @Transactional(readOnly=true)
     fun allSimplePatients(): List<PatientRequest>? {
         val patients = patientRepository.findAll()
 
