@@ -2,3 +2,4 @@
 
 # E-Dentrogram-Backend-TIP-UNQ
 
+**[Cobertura de Código](https://app.codecov.io/gh/Luqui87/E-Dentrogram-Backend-TIP-UNQ)**
