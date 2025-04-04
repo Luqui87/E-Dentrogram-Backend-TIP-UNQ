@@ -1,5 +1,6 @@
 package com.example.E_Dentogram.model
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 
 @Entity
@@ -24,6 +25,7 @@ class Tooth(builder: ToothBuilder) {
     @Column
     var center : ToothState? = builder.center
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
     var patient: Patient? = builder.patient
