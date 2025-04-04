@@ -1,7 +1,6 @@
 package com.example.E_Dentogram.controller
 
 import com.example.E_Dentogram.dto.ToothDTO
-import com.example.E_Dentogram.request.ToothRequest
 import com.example.E_Dentogram.service.ToothService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,8 +31,8 @@ class ToothController{
 
     @Operation(summary = "update teeth ")
     @PutMapping("/update/tooth/{medicalRecord}")
-    fun updateTeeth(@PathVariable medicalRecord: Int,@RequestBody teethRequests: List<ToothRequest>): List<ToothDTO> {
-        val updatedTeeth = service.updateTeeth(medicalRecord,teethRequests)
+    fun updateTeeth(@PathVariable medicalRecord: Int,@RequestBody teethDTO: List<ToothDTO>): List<ToothDTO> {
+        val updatedTeeth = service.updateTeeth(medicalRecord,teethDTO)
         return updatedTeeth
     }
 
