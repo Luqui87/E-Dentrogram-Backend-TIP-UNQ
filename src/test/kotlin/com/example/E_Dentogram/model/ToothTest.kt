@@ -8,10 +8,35 @@ import kotlin.test.Test
 class ToothTest{
 
     @Test
-    fun `should create a tooth with a valid number`() {
+    fun `should create a tooth with a min valid number`() {
         val tooth = Tooth.ToothBuilder().number(1)
 
         assertEquals(1, tooth.number)
+    }
+
+    @Test
+    fun `should create a tooth with a max valid Patient`() {
+        val tooth = Tooth.ToothBuilder().number(52)
+
+        assertEquals(52, tooth.number)
+    }
+
+    @Test
+    fun `should throw exception for a tooth with min invalid number `() {
+
+        val exception = org.junit.jupiter.api.assertThrows<IllegalArgumentException> {
+            Tooth.ToothBuilder().number(0)
+        }
+        assertEquals("The Tooth number is not valid.", exception.message)
+    }
+
+    @Test
+    fun `should throw exception for a tooth with max invalid number `() {
+
+        val exception = org.junit.jupiter.api.assertThrows<IllegalArgumentException> {
+            Tooth.ToothBuilder().number(53)
+        }
+        assertEquals("The Tooth number is not valid.", exception.message)
     }
 
     @Test
