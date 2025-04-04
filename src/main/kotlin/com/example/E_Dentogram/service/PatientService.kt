@@ -33,28 +33,32 @@ class PatientService {
     }
 
     fun createPatient(patientDto: PatientDTO): PatientDTO {
-        try {
 
-            val patient =
-                Patient.PatientBuilder()
-                    .medicalRecord(patientDto.medicalRecord)
-                    .dni(patientDto.dni)
-                    .name( patientDto.name)
-                    .address(patientDto.address)
-                    .birthdate(patientDto.birthdate)
-                    .telephone(patientDto.telephone)
-                    .email(patientDto.email)
-                    .build()
-
-            patientRepository.save(patient)
-
-            return patientDto
-
-        }catch (e: Exception) {
-        // hay que diferenciar errores de usuario: required => 400
-        // vs. errores de BD (se cayó la base) => 500
-            throw RuntimeException("Failed to create patient: ${e.message}")
+        val patient = try {
+            Patient.PatientBuilder()
+                .medicalRecord(patientDto.medicalRecord)
+                .dni(patientDto.dni)
+                .name( patientDto.name)
+                .address(patientDto.address)
+                .birthdate(patientDto.birthdate)
+                .telephone(patientDto.telephone)
+                .email(patientDto.email)
+                .build()
+        } catch (e: Exception) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid data provided for register patient : ${e.message} ", e)
         }
+
+        try {
+            patientRepository.save(patient)
+        }catch (e: Exception) {
+            // hay que diferenciar errores de usuario: required => 400
+            // vs. errores de BD (se cayó la base) => 500
+            throw RuntimeException("Failed to save patient: ${e.message}")
+        }
+
+        return patientDto
+
+
 
     }
 
