@@ -49,6 +49,7 @@ class Tooth(builder: ToothBuilder) {
 
 
         fun number(number: Int) = apply {
+            require(isValidNumber(number)) { "The Tooth number is not valid." }
             this.number = number
         }
 
@@ -74,6 +75,10 @@ class Tooth(builder: ToothBuilder) {
 
         fun patient(patient: Patient) = apply {
             this.patient = patient
+        }
+
+        private fun isValidNumber(number: Int): Boolean {
+            return number in 1..52
         }
 
         fun build(): Tooth {

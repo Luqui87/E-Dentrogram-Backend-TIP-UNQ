@@ -47,16 +47,20 @@ class ToothService {
         val patient = patientRepository.findById(medicalRecord)
         .orElseThrow {  throw ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist")}
 
-        val updatedTeeth = teethRequests.map { tooth ->
-            Tooth.ToothBuilder()
-                .number(tooth.number)
-                .patient(patient)
-                .up(ToothState.stringToState(tooth.up))
-                .left(ToothState.stringToState(tooth.left))
-                .center(ToothState.stringToState(tooth.center))
-                .right(ToothState.stringToState(tooth.right))
-                .down(ToothState.stringToState(tooth.down))
-                .build()
+        val updatedTeeth = try {
+            teethRequests.map { tooth ->
+                Tooth.ToothBuilder()
+                    .number(tooth.number)
+                    .patient(patient)
+                    .up(ToothState.stringToState(tooth.up))
+                    .left(ToothState.stringToState(tooth.left))
+                    .center(ToothState.stringToState(tooth.center))
+                    .right(ToothState.stringToState(tooth.right))
+                    .down(ToothState.stringToState(tooth.down))
+                    .build()
+            }
+        } catch (e: Exception) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid data provided for teeth update", e)
         }
 
          val saveTeeth = toothRepository.saveAll(updatedTeeth)
