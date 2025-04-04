@@ -3,7 +3,6 @@ package com.example.E_Dentogram.controller
 
 import com.example.E_Dentogram.dto.PatientDTO
 import com.example.E_Dentogram.model.Patient
-import com.example.E_Dentogram.request.PatientRequest
 import com.example.E_Dentogram.service.PatientService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,7 +27,7 @@ class PatientController {
 
     @Operation(summary = "Get all Patients without their teeth")
     @GetMapping("/allSimplePatients")
-    fun allSimplePatients(): ResponseEntity<List<PatientRequest>> {
+    fun allSimplePatients(): ResponseEntity<List<PatientDTO>> {
         val patients = service.allSimplePatients()
         return ResponseEntity.ok(patients)
     }
@@ -42,9 +41,9 @@ class PatientController {
 
     @Operation(summary = "Register patient")
     @PostMapping("/patient/{patientMedicalRecord}")
-    fun createPatient(@RequestBody patientRequest: PatientRequest): ResponseEntity<PatientDTO> {
-        val patientDTO = service.createPatient(patientRequest)
-        return ResponseEntity(patientDTO, HttpStatus.CREATED)
+    fun createPatient(@RequestBody patientDTO: PatientDTO): ResponseEntity<PatientDTO> {
+        val patDTO = service.createPatient(patientDTO)
+        return ResponseEntity(patDTO, HttpStatus.CREATED)
     }
 
 

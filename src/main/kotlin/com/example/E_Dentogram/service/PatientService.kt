@@ -3,7 +3,6 @@ package com.example.E_Dentogram.service
 import com.example.E_Dentogram.dto.PatientDTO
 import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.repository.PatientRepository
-import com.example.E_Dentogram.request.PatientRequest
 import jakarta.annotation.Generated
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -33,33 +32,23 @@ class PatientService {
             orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist") }
     }
 
-    fun createPatient(patientRequest: PatientRequest): PatientDTO {
+    fun createPatient(patientDto: PatientDTO): PatientDTO {
         try {
 
             val patient =
                 Patient.PatientBuilder()
-                    .medicalRecord(patientRequest.medicalRecord)
-                    .dni(patientRequest.dni)
-                    .name( patientRequest.name)
-                    .address(patientRequest.address)
-                    .birthdate(patientRequest.birthdate)
-                    .telephone(patientRequest.telephone)
-                    .email(patientRequest.email)
+                    .medicalRecord(patientDto.medicalRecord)
+                    .dni(patientDto.dni)
+                    .name( patientDto.name)
+                    .address(patientDto.address)
+                    .birthdate(patientDto.birthdate)
+                    .telephone(patientDto.telephone)
+                    .email(patientDto.email)
                     .build()
 
             patientRepository.save(patient)
 
-            val patientDTO = PatientDTO(
-                medicalRecord=patientRequest.medicalRecord,
-                dni = patientRequest.dni,
-                name = patientRequest.name,
-                address = patientRequest.address,
-                birthdate = patientRequest.birthdate,
-                telephone = patientRequest.telephone,
-                email = patientRequest.email
-                )
-
-            return patientDTO
+            return patientDto
 
         }catch (e: Exception) {
         // hay que diferenciar errores de usuario: required => 400
@@ -70,10 +59,10 @@ class PatientService {
     }
 
     @Transactional(readOnly=true)
-    fun allSimplePatients(): List<PatientRequest>? {
+    fun allSimplePatients(): List<PatientDTO>? {
         val patients = patientRepository.findAll()
 
-        return patients.map { patient -> PatientRequest(
+        return patients.map { patient -> PatientDTO(
             medicalRecord = patient.medicalRecord!!,
             dni = patient.dni!!,
             name = patient.name!!,
