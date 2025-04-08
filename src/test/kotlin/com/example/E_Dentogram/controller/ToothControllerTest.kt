@@ -124,6 +124,30 @@ class ToothControllerTest {
     }
 
     @Test
+    fun `should not update when tooth state is wrong`(){
+
+        createPatient()
+
+        val body = listOf(
+            mapOf(
+                "number" to "1",
+                "up" to "STATE",
+                "right" to "HEALTHY",
+                "down" to "HEALTHY",
+                "left" to "HEALTHY",
+                "center" to "HEALTHY"
+            )
+        )
+
+        mockMvc.perform(put("/update/tooth/123")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(body)))
+            .andExpect(status().isBadRequest)
+            .andExpect(status().reason("Invalid data provided for teeth update"))
+
+    }
+
+    @Test
     fun `should update teeth`(){
         createPatient()
 
@@ -150,5 +174,12 @@ class ToothControllerTest {
 
     }
 
+    @Test
+    fun `all teeth should be an empty list`(){
+
+        mockMvc.perform(get("/allTooth"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(0)))
+    }
 
 }

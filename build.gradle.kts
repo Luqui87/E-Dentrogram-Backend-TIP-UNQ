@@ -70,16 +70,29 @@ tasks.test {
 }
 tasks.jacocoTestReport {
 	dependsOn(tasks.test) // tests are required to run before generating the report
-}
 
-
-
-tasks.jacocoTestReport {
 	reports {
 		xml.required=true
 		html.required=true
 	}
+
+	classDirectories.setFrom(
+		files(
+			classDirectories.files.map {
+				fileTree(it) {
+					exclude(
+						"com/example/E_Dentogram/EDentogramApplication.kt", // main method class
+						"com/example/E_Dentogram/ServletInitializer.kt"
+					)
+				}
+			}
+		)
+	)
 }
+
+
+
+
 
 
 
