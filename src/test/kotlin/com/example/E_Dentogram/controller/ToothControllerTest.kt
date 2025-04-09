@@ -5,7 +5,6 @@ import com.example.E_Dentogram.model.Tooth
 import com.example.E_Dentogram.model.ToothState
 import com.example.E_Dentogram.repository.PatientRepository
 import com.example.E_Dentogram.repository.ThoothRepository
-import com.example.E_Dentogram.request.ToothRequest
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.hamcrest.collection.IsCollectionWithSize
 import org.junit.jupiter.api.BeforeEach
@@ -16,12 +15,10 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.get
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.http.MediaType
 import java.time.LocalDate
@@ -127,6 +124,30 @@ class ToothControllerTest {
     }
 
     @Test
+    fun `should not update when tooth state is wrong`(){
+
+        createPatient()
+
+        val body = listOf(
+            mapOf(
+                "number" to "1",
+                "up" to "STATE",
+                "right" to "HEALTHY",
+                "down" to "HEALTHY",
+                "left" to "HEALTHY",
+                "center" to "HEALTHY"
+            )
+        )
+
+        mockMvc.perform(put("/update/tooth/123")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(body)))
+            .andExpect(status().isBadRequest)
+            .andExpect(status().reason("Invalid data provided for teeth update"))
+
+    }
+
+    @Test
     fun `should update teeth`(){
         createPatient()
 
@@ -153,5 +174,12 @@ class ToothControllerTest {
 
     }
 
+    @Test
+    fun `all teeth should be an empty list`(){
+
+        mockMvc.perform(get("/allTooth"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(0)))
+    }
 
 }
