@@ -5,6 +5,7 @@ plugins {
 	id("org.springframework.boot") version "3.4.4"
 	id("io.spring.dependency-management") version "1.1.7"
 	kotlin("plugin.jpa") version "1.9.25"
+	jacoco
 }
 
 group = "com.example"
@@ -22,7 +23,7 @@ repositories {
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.springframework.boot:spring-boot-starter-security")
+	//implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -34,6 +35,17 @@ dependencies {
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+	implementation ("org.postgresql:postgresql:42.2.24")
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+
+	testImplementation("org.testcontainers:junit-jupiter")
+	testImplementation("org.testcontainers:postgresql")
+
+	testImplementation("org.junit.jupiter:junit-jupiter")
+	testImplementation("org.mockito:mockito-core")
+	testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
 kotlin {
@@ -51,3 +63,36 @@ allOpen {
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
+
+
+tasks.test {
+	finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+}
+tasks.jacocoTestReport {
+	dependsOn(tasks.test) // tests are required to run before generating the report
+
+	reports {
+		xml.required=true
+		html.required=true
+	}
+
+	classDirectories.setFrom(
+		files(
+			classDirectories.files.map {
+				fileTree(it) {
+					exclude(
+						"com/example/E_Dentogram/EDentogramApplication.kt", // main method class
+						"com/example/E_Dentogram/ServletInitializer.kt"
+					)
+				}
+			}
+		)
+	)
+}
+
+
+
+
+
+
+
