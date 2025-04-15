@@ -1,0 +1,44 @@
+package com.example.E_Dentogram.model
+
+import jakarta.persistence.*
+
+@Entity
+@Table(name = "dentist_table")
+class Dentist(builder: DentistBuilder) {
+
+    @Id
+    var username: String? = builder.username
+
+    @Column
+    var password: String? = builder.password
+
+    @OneToMany(mappedBy = "dentist", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    var patients: MutableList<Patient>? = builder.patients
+
+    class DentistBuilder {
+        var username: String? = null
+            private set
+        var password: String? = null
+            private set
+        var patients: MutableList<Patient>? = null
+            private set
+
+        fun username(username: String) = apply {
+            this.username = username
+        }
+
+        fun password(password: String) = apply {
+            require(isValidPassword(password)) { "The password is not strong enough." }
+            this.password = password
+        }
+
+        fun patients(patients: MutableList<Patient>) = apply {
+            this.patients = patients
+        }
+
+        private fun isValidPassword(password: String): Boolean {
+            return password.length >= 8
+        }
+
+    }
+}
