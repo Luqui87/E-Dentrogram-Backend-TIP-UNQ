@@ -41,4 +41,16 @@ class Dentist(builder: DentistBuilder) {
         }
 
     }
+
+    fun addPatient(patient: Patient) {
+        if (!patients!!.contains(patient)) {
+            patients!!.add(patient)
+            patient.updateDentist(this)
+        }
+    }
+
+    fun removePatient(patientMedicalRecord: Int) {
+        this.patients?.removeIf { it.medicalRecord == patientMedicalRecord }
+    }
+
 }

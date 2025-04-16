@@ -128,4 +128,8 @@ class Patient(builder: PatientBuilder) {
         }
     }
 
+    fun updateDentist(dentist: Dentist) {
+        this.dentist = dentist
+    }
+
 }
