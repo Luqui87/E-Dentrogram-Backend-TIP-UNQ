@@ -139,6 +139,17 @@ class PatientTest {
         assertEquals("The amount of teeth is not valid.", exception.message)
     }
 
+    @Test
+    fun `should add patient if not already in the list`() {
+        val oldDentist = mock<Dentist>()
+        val newDentist = mock<Dentist>()
 
+        val patient = Patient.PatientBuilder().dentist(oldDentist).build()
+
+        patient.updateDentist(newDentist)
+
+        assertTrue(patient.dentist!! == newDentist)
+        assertFalse(patient.dentist!! == oldDentist)
+    }
 
 }

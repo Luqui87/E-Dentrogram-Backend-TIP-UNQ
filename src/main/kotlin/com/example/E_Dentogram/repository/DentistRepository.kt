@@ -3,5 +3,5 @@ package com.example.E_Dentogram.repository
 import com.example.E_Dentogram.model.Dentist
 import org.springframework.data.jpa.repository.JpaRepository
 
-interface DentistRepository : JpaRepository<Dentist, String> {
+interface DentistRepository : JpaRepository<Dentist, Long> {
 }

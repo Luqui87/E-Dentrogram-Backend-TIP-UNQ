@@ -7,6 +7,10 @@ import jakarta.persistence.*
 class Dentist(builder: DentistBuilder) {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long? = null
+
+    @Column(unique = true, nullable = false)
     var username: String? = builder.username
 
     @Column
@@ -38,6 +42,10 @@ class Dentist(builder: DentistBuilder) {
 
         private fun isValidPassword(password: String): Boolean {
             return password.length >= 8
+        }
+
+        fun build(): Dentist {
+            return Dentist(this)
         }
 
     }

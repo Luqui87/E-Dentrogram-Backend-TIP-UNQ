@@ -1,8 +1,10 @@
 package com.example.E_Dentogram.controller
 
+import com.example.E_Dentogram.model.Dentist
 import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.model.Tooth
 import com.example.E_Dentogram.model.ToothState
+import com.example.E_Dentogram.repository.DentistRepository
 import com.example.E_Dentogram.repository.PatientRepository
 import com.example.E_Dentogram.repository.ThoothRepository
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -37,6 +39,9 @@ class ToothControllerTest {
     @Autowired
     private lateinit var toothRepository: ThoothRepository
 
+    @Autowired
+    private lateinit var dentistRepository : DentistRepository
+
     companion object{
         @Container
         private val postgreSQLContainer = PostgreSQLContainer<Nothing>("postgres:latest")
@@ -53,6 +58,12 @@ class ToothControllerTest {
     }
 
     fun createPatient(): Patient{
+        val dentist = Dentist.DentistBuilder()
+            .username("User1")
+            .password("password1")
+            .patients(mutableListOf())
+            .build()
+
         val patient = Patient.PatientBuilder()
             .medicalRecord(123)
             .dni(42421645)
@@ -61,8 +72,10 @@ class ToothControllerTest {
             .birthdate(LocalDate.of(2000, 10, 12))
             .telephone(1153276406)
             .email("lucas@mail.com")
+            .dentist(dentist)
             .build()
 
+        dentistRepository.save(dentist)
         val savePatient = patientRepository.save(patient)
 
         return savePatient
@@ -70,6 +83,7 @@ class ToothControllerTest {
 
     @BeforeEach
     fun setup() {
+        dentistRepository.deleteAll()
         patientRepository.deleteAll()
         toothRepository.deleteAll()
     }

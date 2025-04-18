@@ -29,6 +29,7 @@ class DentistService {
 
         val dentistDTOs = dentists.map {
             dentist -> DentistSimpleDTO(
+                dentistID = dentist.id!!,
                 username = dentist.username!!,
                 password = dentist.password!!)
         }
@@ -36,16 +37,16 @@ class DentistService {
     }
 
     @Transactional(readOnly=true)
-    fun getDentist(username: String): DentistDTO {
+    fun getDentist(dentistId: Long): DentistDTO {
 
-        val dentist = dentistRepository.findById(username).
+        val dentist = dentistRepository.findById(dentistId).
         orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist") }
 
         return DentistDTO.fromModel(dentist)
     }
 
-    fun removePatient(username: String,patientMedicalRecord: Int) {
-        val dentist = dentistRepository.findById(username).
+    fun removePatient(dentistId: Long,patientMedicalRecord: Int) {
+        val dentist = dentistRepository.findById(dentistId).
         orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist") }
 
         try {
@@ -58,8 +59,8 @@ class DentistService {
 
     }
 
-    fun addPatient(username: String, patientDTO: PatientDTO): DentistDTO {
-        val dentist = dentistRepository.findById(username).
+    fun addPatient(dentistId: Long, patientDTO: PatientDTO): DentistDTO {
+        val dentist = dentistRepository.findById(dentistId).
         orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist") }
 
         var patient = patientRepository.findById(patientDTO.medicalRecord).orElse(null)

@@ -17,30 +17,30 @@ class DentistController {
     lateinit var service: DentistService
 
     @Operation(summary = "Get all Dentist")
-    @GetMapping("/allDentist")
+    @GetMapping("/allDentist")  //Borrar
     fun allDentist(): ResponseEntity<List<DentistSimpleDTO>> {
         val dentists = service.allDentist()
         return ResponseEntity.ok(dentists)
     }
 
     @Operation(summary = "Get Dentist")
-    @GetMapping("/dentist/{username}")
-    fun getDentist(@PathVariable username: String): ResponseEntity<DentistDTO> {
-        val dentist = service.getDentist(username)
+    @GetMapping("/dentist/{dentistId}")
+    fun getDentist(@PathVariable dentistId: Long): ResponseEntity<DentistDTO> {
+        val dentist = service.getDentist(dentistId)
         return ResponseEntity.ok(dentist)
     }
 
     @Operation(summary = "Remove  Dentist´s patient")
-    @PutMapping("/dentist/Remove/{username}/{patientMedicalRecord}")
-    fun removePatient(@PathVariable username: String,@PathVariable patientMedicalRecord: Int): ResponseEntity<Void> {
-        service.removePatient(username,patientMedicalRecord)
+    @PutMapping("/dentist/Remove/{dentistId}/{patientMedicalRecord}")
+    fun removePatient(@PathVariable dentistId: Long,@PathVariable patientMedicalRecord: Int): ResponseEntity<Void> {
+        service.removePatient(dentistId,patientMedicalRecord)
         return ResponseEntity.ok().build()
     }
 
     @Operation(summary = "add patient to Dentist ")
-    @PutMapping("/dentist/add/{username}")
-    fun addPatient(@PathVariable username: String,@RequestBody patientDTO: PatientDTO): ResponseEntity<DentistDTO> {
-        val dentist = service.addPatient(username,patientDTO)
+    @PutMapping("/dentist/add/{dentistId}")
+    fun addPatient(@PathVariable dentistId: Long,@RequestBody patientDTO: PatientDTO): ResponseEntity<DentistDTO> {
+        val dentist = service.addPatient(dentistId,patientDTO)
         return ResponseEntity.ok(dentist)
     }
 

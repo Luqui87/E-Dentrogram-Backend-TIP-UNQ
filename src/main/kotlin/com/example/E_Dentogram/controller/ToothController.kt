@@ -16,7 +16,7 @@ class ToothController{
     lateinit var service: ToothService
 
     @Operation(summary = "Get all teeth")
-    @GetMapping("/allTooth")
+    @GetMapping("/allTooth") //Borrar
     fun allTooth(): ResponseEntity<List<ToothDTO>> {
         val teeth = service.allTooth()
         return ResponseEntity.ok(teeth)
