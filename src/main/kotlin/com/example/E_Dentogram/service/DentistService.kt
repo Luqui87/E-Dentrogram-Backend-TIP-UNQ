@@ -3,12 +3,14 @@ package com.example.E_Dentogram.service
 import com.example.E_Dentogram.dto.DentistDTO
 import com.example.E_Dentogram.dto.DentistSimpleDTO
 import com.example.E_Dentogram.dto.PatientDTO
+import com.example.E_Dentogram.model.Dentist
 import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.repository.DentistRepository
 import com.example.E_Dentogram.repository.PatientRepository
 import jakarta.annotation.Generated
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
@@ -19,9 +21,13 @@ import org.springframework.web.server.ResponseStatusException
 class DentistService {
 
     @Autowired
+    private lateinit var encoder: PasswordEncoder
+
+    @Autowired
     lateinit var dentistRepository : DentistRepository
     @Autowired
     lateinit var patientRepository : PatientRepository
+
 
     @Transactional(readOnly=true)
     fun allDentist(): List<DentistSimpleDTO>? {
@@ -29,7 +35,6 @@ class DentistService {
 
         val dentistDTOs = dentists.map {
             dentist -> DentistSimpleDTO(
-                dentistID = dentist.id!!,
                 username = dentist.username!!,
                 password = dentist.password!!)
         }
@@ -93,6 +98,21 @@ class DentistService {
 
         return DentistDTO.fromModel(dentist)
 
+    }
+
+    fun signUp(dentistDTO: DentistSimpleDTO){
+        if ( dentistRepository.existsDentistByUsername(dentistDTO.username)  ){
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "This user already exists")
+        }
+        else{
+            val dentist =
+                Dentist.DentistBuilder()
+                    .username(dentistDTO.username)
+                    .password(encoder.encode(dentistDTO.password))
+                    .build()
+
+            dentistRepository.save(dentist)
+        }
     }
 
 }

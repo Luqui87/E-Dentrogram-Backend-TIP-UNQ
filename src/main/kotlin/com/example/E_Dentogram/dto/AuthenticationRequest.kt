@@ -1,6 +1,7 @@
 package com.example.E_Dentogram.dto
 
-class DentistSimpleDTO(
+data class AuthenticationRequest(
     val username: String,
-    val password: String
-){}
+    val password: String,
+)
+

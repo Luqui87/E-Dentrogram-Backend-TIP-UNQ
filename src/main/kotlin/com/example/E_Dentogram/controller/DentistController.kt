@@ -1,11 +1,11 @@
 package com.example.E_Dentogram.controller
 
-import com.example.E_Dentogram.dto.DentistDTO
-import com.example.E_Dentogram.dto.DentistSimpleDTO
-import com.example.E_Dentogram.dto.PatientDTO
+import com.example.E_Dentogram.dto.*
+import com.example.E_Dentogram.service.AuthenticationService
 import com.example.E_Dentogram.service.DentistService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -15,6 +15,9 @@ class DentistController {
 
     @Autowired
     lateinit var service: DentistService
+
+    @Autowired
+    lateinit var authenticationService: AuthenticationService
 
     @Operation(summary = "Get all Dentist")
     @GetMapping("/allDentist")  //Borrar
@@ -30,7 +33,7 @@ class DentistController {
         return ResponseEntity.ok(dentist)
     }
 
-    @Operation(summary = "Remove  Dentist´s patient")
+    @Operation(summary = "Remove Dentist´s patient")
     @PutMapping("/dentist/Remove/{dentistId}/{patientMedicalRecord}")
     fun removePatient(@PathVariable dentistId: Long,@PathVariable patientMedicalRecord: Int): ResponseEntity<Void> {
         service.removePatient(dentistId,patientMedicalRecord)
@@ -43,5 +46,13 @@ class DentistController {
         val dentist = service.addPatient(dentistId,patientDTO)
         return ResponseEntity.ok(dentist)
     }
+
+    @Operation(summary = "Add a Dentist to the system")
+    @PostMapping("/dentist")
+    fun signUp(@RequestBody dentistDTO: DentistSimpleDTO): ResponseEntity<Void> {
+        service.signUp(dentistDTO)
+        return ResponseEntity.status(HttpStatus.CREATED).build()
+    }
+
 
 }

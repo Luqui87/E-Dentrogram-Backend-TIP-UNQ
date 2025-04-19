@@ -16,6 +16,8 @@ class Dentist(builder: DentistBuilder) {
     @Column
     var password: String? = builder.password
 
+    var role: Role = Role.USER
+
     @OneToMany(mappedBy = "dentist", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     var patients: MutableList<Patient>? = builder.patients
 
@@ -61,4 +63,8 @@ class Dentist(builder: DentistBuilder) {
         this.patients?.removeIf { it.medicalRecord == patientMedicalRecord }
     }
 
+}
+
+enum class Role{
+    USER,ADMIN
 }
