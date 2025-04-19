@@ -27,9 +27,9 @@ class DentistController {
     }
 
     @Operation(summary = "Get Dentist")
-    @GetMapping("/dentist/{dentistId}")
-    fun getDentist(@PathVariable dentistId: Long): ResponseEntity<DentistDTO> {
-        val dentist = service.getDentist(dentistId)
+    @GetMapping("/dentist/{username}")
+    fun getDentist(@PathVariable username: String): ResponseEntity<DentistDTO> {
+        val dentist = service.getDentist(username)
         return ResponseEntity.ok(dentist)
     }
 
@@ -48,10 +48,10 @@ class DentistController {
     }
 
     @Operation(summary = "Add a Dentist to the system")
-    @PostMapping("/dentist")
-    fun signUp(@RequestBody dentistDTO: DentistSimpleDTO): ResponseEntity<Void> {
-        service.signUp(dentistDTO)
-        return ResponseEntity.status(HttpStatus.CREATED).build()
+    @PostMapping("/register")
+    fun signUp(@RequestBody dentistDTO: DentistSimpleDTO): ResponseEntity<AuthenticationResponse> {
+        val token = service.signUp(dentistDTO)
+        return ResponseEntity.status(HttpStatus.CREATED).body(token)
     }
 
 

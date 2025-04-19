@@ -1,5 +1,7 @@
 package com.example.E_Dentogram.service
 
+import com.example.E_Dentogram.config.JwtProperties
+import com.example.E_Dentogram.dto.AuthenticationResponse
 import com.example.E_Dentogram.dto.DentistDTO
 import com.example.E_Dentogram.dto.DentistSimpleDTO
 import com.example.E_Dentogram.dto.PatientDTO
@@ -14,11 +16,16 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
+import java.util.*
 
 @Generated
 @Service
 @Transactional
-class DentistService {
+class DentistService(
+    private val userDetailService: CustomUserDetailService,
+    private val tokenService: TokenService,
+    private val jwtProperties: JwtProperties,
+) {
 
     @Autowired
     private lateinit var encoder: PasswordEncoder
@@ -42,10 +49,9 @@ class DentistService {
     }
 
     @Transactional(readOnly=true)
-    fun getDentist(dentistId: Long): DentistDTO {
-
-        val dentist = dentistRepository.findById(dentistId).
-        orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist") }
+    fun getDentist(username: String): DentistDTO {
+        val dentist = dentistRepository.findByUsername(username)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist")
 
         return DentistDTO.fromModel(dentist)
     }
@@ -100,19 +106,25 @@ class DentistService {
 
     }
 
-    fun signUp(dentistDTO: DentistSimpleDTO){
-        if ( dentistRepository.existsDentistByUsername(dentistDTO.username)  ){
+    fun signUp(dentistDTO: DentistSimpleDTO): AuthenticationResponse {
+        if (dentistRepository.existsDentistByUsername(dentistDTO.username)) {
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "This user already exists")
         }
-        else{
-            val dentist =
-                Dentist.DentistBuilder()
-                    .username(dentistDTO.username)
-                    .password(encoder.encode(dentistDTO.password))
-                    .build()
 
-            dentistRepository.save(dentist)
-        }
+        val dentist = Dentist.DentistBuilder()
+            .username(dentistDTO.username)
+            .password(encoder.encode(dentistDTO.password))
+            .build()
+
+        dentistRepository.save(dentist)
+
+        val userDetails = userDetailService.loadUserByUsername(dentist.username!!)
+        val token = tokenService.generate(
+            userDetails,
+            Date(System.currentTimeMillis() + jwtProperties.accessTokenExpiration)
+        )
+
+        return AuthenticationResponse(accessToken = token)
     }
 
 }
