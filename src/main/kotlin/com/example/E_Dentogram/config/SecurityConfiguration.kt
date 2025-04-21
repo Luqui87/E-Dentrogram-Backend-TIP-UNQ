@@ -9,6 +9,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.DefaultSecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
+import org.springframework.web.filter.CorsFilter
 
 @Configuration
 @EnableWebSecurity
@@ -25,10 +28,13 @@ class SecurityConfiguration (
             .headers{it.frameOptions{it.disable()}}
             .authorizeHttpRequests{
                 it
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers( "/auth", "auth/refresh", "/error", "/h2-console/", "/h2-console/**", "/swagger-ui/**","/v3/api-docs/**")
                     .permitAll()
-                    .requestMatchers(HttpMethod.POST, "/register","/login")
+                    .requestMatchers( "/register","/login")
                     .permitAll()
+                    .requestMatchers("/dentist/**")
+                    .authenticated()
                     .requestMatchers("/patient/**")
                     .authenticated()
                     .requestMatchers("/tooth/**")
@@ -43,4 +49,18 @@ class SecurityConfiguration (
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .build()
 
+    @Bean
+    fun corsFilter(): CorsFilter {
+        val source = UrlBasedCorsConfigurationSource()
+        val config = CorsConfiguration()
+
+        config.allowCredentials = true
+        config.addAllowedOrigin("http://localhost:5174")
+        config.addAllowedHeader("*")
+        config.addAllowedMethod("*")
+
+        source.registerCorsConfiguration("/**", config)
+        return CorsFilter(source)
+    }
 }
+

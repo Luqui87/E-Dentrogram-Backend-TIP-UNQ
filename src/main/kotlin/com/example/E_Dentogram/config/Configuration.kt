@@ -12,6 +12,8 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.web.servlet.config.annotation.CorsRegistry
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
 @EnableConfigurationProperties(JwtProperties::class)
@@ -35,4 +37,17 @@ class Configuration {
     @Bean
     fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager =
         config.authenticationManager
+
+    @Bean
+    fun corsConfigurer(): WebMvcConfigurer {
+        return object : WebMvcConfigurer {
+            override fun addCorsMappings(registry: CorsRegistry) {
+                registry.addMapping("/**")
+                    .allowedOrigins("http://localhost:5174") // Cambia al origen que necesites
+                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    .allowedHeaders("*")
+                    .allowCredentials(true)
+            }
+        }
+    }
 }

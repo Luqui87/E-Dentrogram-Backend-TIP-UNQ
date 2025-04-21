@@ -49,7 +49,10 @@ class DentistService(
     }
 
     @Transactional(readOnly=true)
-    fun getDentist(username: String): DentistDTO {
+    fun getDentist(token: String): DentistDTO {
+        val username = tokenService.extractUsername(token.substringAfter("Bearer "))
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED,"Hola")
+
         val dentist = dentistRepository.findByUsername(username)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist")
 

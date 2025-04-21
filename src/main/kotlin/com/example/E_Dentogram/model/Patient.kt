@@ -102,7 +102,7 @@ class Patient(builder: PatientBuilder) {
 
 
         private fun isValidDni(dni: Int): Boolean {
-            return dni.toString().length == 8
+            return dni.toString().length > 0
         }
 
         private fun isValidBirthdate(birthdate: LocalDate): Boolean {

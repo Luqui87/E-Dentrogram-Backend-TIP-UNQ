@@ -1,7 +1,6 @@
 package com.example.E_Dentogram.controller
 
 import com.example.E_Dentogram.dto.*
-import com.example.E_Dentogram.service.AuthenticationService
 import com.example.E_Dentogram.service.DentistService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,8 +15,6 @@ class DentistController {
     @Autowired
     lateinit var service: DentistService
 
-    @Autowired
-    lateinit var authenticationService: AuthenticationService
 
     @Operation(summary = "Get all Dentist")
     @GetMapping("/allDentist")  //Borrar
@@ -28,8 +25,9 @@ class DentistController {
 
     @Operation(summary = "Get Dentist")
     @GetMapping("/dentist/{username}")
-    fun getDentist(@PathVariable username: String): ResponseEntity<DentistDTO> {
-        val dentist = service.getDentist(username)
+    fun getDentist(@PathVariable username: String, @RequestHeader("Authorization") token: String): ResponseEntity<DentistDTO> {
+
+        val dentist = service.getDentist(token)
         return ResponseEntity.ok(dentist)
     }
 
