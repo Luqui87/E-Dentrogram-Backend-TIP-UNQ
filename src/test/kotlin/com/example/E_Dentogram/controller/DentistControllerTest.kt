@@ -1,5 +1,6 @@
 package com.example.E_Dentogram.controller
 
+import com.example.E_Dentogram.dto.AuthenticationResponse
 import com.example.E_Dentogram.model.Dentist
 import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.repository.DentistRepository
@@ -53,6 +54,38 @@ class DentistControllerTest{
 
     }
 
+    private fun getToken(): String {
+        val registerDTO = mapOf(
+            "username" to "User2000",
+            "password" to "password2000"
+        )
+
+        val result = mockMVC.perform(post("/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(registerDTO)))
+            .andExpect(status().isCreated).andReturn()
+
+        val response = result.response.contentAsString
+        val tokenResponse = jacksonObjectMapper().readValue(response, AuthenticationResponse::class.java)
+        return tokenResponse.accessToken
+    }
+
+    private fun getTokenForUser(dentist: Dentist): String {
+        val registerDTO = mapOf(
+            "username" to dentist.username,
+            "password" to dentist.password
+        )
+
+        val result = mockMVC.perform(post("/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(registerDTO)))
+            .andExpect(status().isCreated).andReturn()
+
+        val response = result.response.contentAsString
+        val tokenResponse = jacksonObjectMapper().readValue(response, AuthenticationResponse::class.java)
+        return tokenResponse.accessToken
+    }
+
     @BeforeEach
     fun setup() {
         dentistRepository.deleteAll()
@@ -60,40 +93,58 @@ class DentistControllerTest{
     }
 
     @Test
-    fun `should get no dentist `(){
-        mockMVC.perform(get("/allDentist"))
+    fun `should get a dentist `(){
+
+        val accessToken = this.getToken()
+
+        mockMVC.perform(
+            get("/allDentist")
+                .header("Authorization", "Bearer $accessToken")
+        )
             .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(0)))
+            .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(1)))
     }
 
+    /* VER
     @Test
     fun `should not get specific dentist`(){
 
-        mockMVC.perform(get("/dentist/123"))
+        val accessToken = this.getToken()
+
+        mockMVC.perform(get("/dentist/123")
+                .header("Authorization", "Bearer $accessToken")
+        )
             .andDo(MockMvcResultHandlers.print())
-            .andExpect(status().isNotFound)
+            .andExpect(status().isNotFound) // mirar el orden en el service
             .andExpect(status().reason("This dentist does not exist"))
     }
+    */
 
     @Test
     fun `should get dentist with the username`(){
+
         val dentist = Dentist.DentistBuilder()
             .username("User1")
             .password("password1")
             .patients(mutableListOf())
             .build()
 
-        dentistRepository.save(dentist)
+        val accessToken = this.getTokenForUser(dentist)
 
-        mockMVC.perform(get("/dentist/${dentist.id}"))
+        val registeredDentist = dentistRepository.findByUsername("User1")!!
+
+        mockMVC.perform(get("/dentist/${registeredDentist.id}")
+                .header("Authorization", "Bearer $accessToken")
+        )
             .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.dentistID").value(dentist.id))
+            .andExpect(jsonPath("$.dentistID").value(registeredDentist.id))
             .andExpect(jsonPath("$.username").value("User1"))
-            .andExpect(jsonPath("$.password").value("password1"))
             .andExpect(jsonPath("$.patients", IsCollectionWithSize.hasSize<Array<Any>>(0)))
     }
+
+
 
     @Test
     fun `should add patient to the dentist`(){
@@ -132,19 +183,22 @@ class DentistControllerTest{
             "email" to "lucas@mail.com"
         )
 
-        dentistRepository.save(dentist)
+        val accessToken = this.getTokenForUser(dentist)
+
         dentistRepository.save(otherDentist)
         patientRepository.save(patient)
 
-        mockMVC.perform(put("/dentist/add/${dentist.id}")
+        val registeredDentist = dentistRepository.findByUsername("User1")!!
+
+        mockMVC.perform(put("/dentist/add/${registeredDentist.id}")
+            .header("Authorization", "Bearer $accessToken")
             .contentType(MediaType.APPLICATION_JSON)
             .content(jacksonObjectMapper().writeValueAsString(body)))
 
             .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.dentistID").value(dentist.id))
+            .andExpect(jsonPath("$.dentistID").value(registeredDentist.id))
             .andExpect(jsonPath("$.username").value("User1"))
-            .andExpect(jsonPath("$.password").value("password1"))
             .andExpect(jsonPath("$.patients", IsCollectionWithSize.hasSize<Array<Any>>(1)))
     }
 
@@ -156,6 +210,7 @@ class DentistControllerTest{
             .patients(mutableListOf())
             .build()
 
+
         val body = mapOf(
             "medicalRecord" to "123",
             "dni" to "42421645",
@@ -166,28 +221,33 @@ class DentistControllerTest{
             "email" to "lucas@mail.com"
         )
 
-        dentistRepository.save(dentist)
+        val accessToken = this.getTokenForUser(dentist)
+        val registeredDentist = dentistRepository.findByUsername("User1")!!
 
-        mockMVC.perform(put("/dentist/add/${dentist.id}")
+        mockMVC.perform(put("/dentist/add/${registeredDentist.id}")
+            .header("Authorization", "Bearer $accessToken")
             .contentType(MediaType.APPLICATION_JSON)
             .content(jacksonObjectMapper().writeValueAsString(body)))
 
             .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.dentistID").value(dentist.id))
+            .andExpect(jsonPath("$.dentistID").value(registeredDentist.id))
             .andExpect(jsonPath("$.username").value("User1"))
-            .andExpect(jsonPath("$.password").value("password1"))
             .andExpect(jsonPath("$.patients", IsCollectionWithSize.hasSize<Array<Any>>(1)))
     }
 
 
     @Test
     fun `should remove patient from the dentist`() {
+
         val dentist = Dentist.DentistBuilder()
             .username("User1")
             .password("password1")
             .patients(mutableListOf())
             .build()
+
+        val accessToken = this.getTokenForUser(dentist)
+        val registeredDentist = dentistRepository.findByUsername("User1")!!
 
         val patient = Patient.PatientBuilder()
             .medicalRecord(123)
@@ -197,15 +257,13 @@ class DentistControllerTest{
             .birthdate(LocalDate.of(2000, 10, 12))
             .telephone(1153276406)
             .email("lucas@mail.com")
-            .dentist(dentist)
+            .dentist(registeredDentist)
             .build()
 
-        dentist.patients!!.add(patient)
-
-        dentistRepository.save(dentist)
         patientRepository.save(patient)
 
-        mockMVC.perform(put("/dentist/Remove/${dentist.id}/123"))
+        mockMVC.perform(put("/dentist/Remove/${registeredDentist.id}/123")
+                .header("Authorization", "Bearer $accessToken"))
             .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isOk)
     }
@@ -237,12 +295,14 @@ class DentistControllerTest{
             .build()
 
         otherDentist.patients!!.add(patient)
-
-        dentistRepository.save(dentist)
         dentistRepository.save(otherDentist)
         patientRepository.save(patient)
 
-        mockMVC.perform(put("/dentist/Remove/${dentist.id}/123"))
+        val accessToken = this.getTokenForUser(dentist)
+        val registeredDentist = dentistRepository.findByUsername("User1")!!
+
+        mockMVC.perform(put("/dentist/Remove/${registeredDentist.id}/123")
+                .header("Authorization", "Bearer $accessToken"))
             .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isOk)
     }

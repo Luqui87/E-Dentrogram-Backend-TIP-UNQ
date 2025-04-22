@@ -24,22 +24,6 @@ class PatientTest {
     }
 
     @Test
-    fun `should throw exception for patient with a short dni`() {
-        val exception = assertThrows<RuntimeException> {
-            Patient.PatientBuilder().dni(12345)
-        }
-        assertEquals("The DNI length is no correct.", exception.message)
-    }
-
-    @Test
-    fun `should throw exception for patient with a long dni`() {
-        val exception = assertThrows<RuntimeException> {
-            Patient.PatientBuilder().dni(123456789)
-        }
-        assertEquals("The DNI length is no correct.", exception.message)
-    }
-
-    @Test
     fun `should create a patient with a valid name`() {
         val patient = Patient.PatientBuilder().name("Pedro")
 

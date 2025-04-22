@@ -1,5 +1,6 @@
 package com.example.E_Dentogram.controller
 
+import com.example.E_Dentogram.dto.AuthenticationResponse
 import com.example.E_Dentogram.model.Dentist
 import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.model.Tooth
@@ -40,12 +41,11 @@ class ToothControllerTest {
     private lateinit var toothRepository: ThoothRepository
 
     @Autowired
-    private lateinit var dentistRepository : DentistRepository
+    private lateinit var dentistRepository: DentistRepository
 
     companion object{
         @Container
         private val postgreSQLContainer = PostgreSQLContainer<Nothing>("postgres:latest")
-
 
         @JvmStatic
         @DynamicPropertySource
@@ -54,10 +54,26 @@ class ToothControllerTest {
             registry.add("spring.datasource.username", postgreSQLContainer::getUsername)
             registry.add("spring.datasource.password", postgreSQLContainer::getPassword)
         }
-
     }
 
-    fun createPatient(): Patient{
+    private fun getAccessToken(): String {
+        val registerDTO = mapOf(
+            "username" to "User2",
+            "password" to "password2"
+        )
+
+        val result = mockMvc.perform(post("/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(registerDTO)))
+            .andExpect(status().isCreated).andReturn()
+
+        val response = result.response.contentAsString
+        val tokenResponse = jacksonObjectMapper().readValue(response, AuthenticationResponse::class.java)
+
+        return tokenResponse.accessToken
+    }
+
+    fun createPatient(): Patient {
         val dentist = Dentist.DentistBuilder()
             .username("User1")
             .password("password1")
@@ -89,26 +105,30 @@ class ToothControllerTest {
     }
 
     @Test
-    fun `should not find the patient`(){
+    fun `should not find the patient`() {
+        val token = getAccessToken()
 
-        mockMvc.perform(get("/tooth/123"))
+        mockMvc.perform(get("/tooth/123")
+            .header("Authorization", "Bearer $token"))
             .andExpect(status().isNotFound)
             .andExpect(status().reason("This patient does not exist"))
-
     }
 
-     @Test
-     fun `teeth should be an empty list`(){
-         createPatient()
+    @Test
+    fun `teeth should be an empty list`() {
+        createPatient()
+        val token = this.getAccessToken()
 
-         mockMvc.perform(get("/tooth/123"))
-             .andExpect(status().isOk)
-             .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(0)))
-     }
+        mockMvc.perform(get("/tooth/123")
+            .header("Authorization", "Bearer $token"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(0)))
+    }
 
     @Test
-    fun `should get one tooth`(){
-        val patient = createPatient()
+    fun `should get one tooth`() {
+        val patient = this.createPatient()
+        val token = this.getAccessToken()
 
         val tooth = Tooth.ToothBuilder()
             .patient(patient)
@@ -122,30 +142,31 @@ class ToothControllerTest {
 
         toothRepository.save(tooth)
 
-
-        mockMvc.perform(get("/tooth/123"))
+        mockMvc.perform(get("/tooth/123")
+            .header("Authorization", "Bearer $token"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(1)))
             .andExpect(jsonPath("$[0].number").value(1))
-
     }
 
-
     @Test
-    fun `should not update when no body is present`(){
-        mockMvc.perform(put("/update/tooth/123"))
+    fun `should not update when no body is present`() {
+        val token = this.getAccessToken()
+
+        mockMvc.perform(put("/update/tooth/123")
+            .header("Authorization", "Bearer $token"))
             .andExpect(status().isBadRequest)
     }
 
     @Test
-    fun `should not update when tooth state is wrong`(){
-
-        createPatient()
+    fun `should not update when tooth state is wrong`() {
+        this.createPatient()
+        val token = this.getAccessToken()
 
         val body = listOf(
             mapOf(
                 "number" to "1",
-                "up" to "STATE",
+                "up" to "STATE",  // Este es un valor incorrecto
                 "right" to "HEALTHY",
                 "down" to "HEALTHY",
                 "left" to "HEALTHY",
@@ -154,16 +175,17 @@ class ToothControllerTest {
         )
 
         mockMvc.perform(put("/update/tooth/123")
+            .header("Authorization", "Bearer $token")
             .contentType(MediaType.APPLICATION_JSON)
             .content(jacksonObjectMapper().writeValueAsString(body)))
             .andExpect(status().isBadRequest)
             .andExpect(status().reason("Invalid data provided for teeth update"))
-
     }
 
     @Test
-    fun `should update teeth`(){
-        createPatient()
+    fun `should update teeth`() {
+        this.createPatient()
+        val token = this.getAccessToken()
 
         val body = listOf(
             mapOf(
@@ -177,23 +199,22 @@ class ToothControllerTest {
         )
 
         mockMvc.perform(put("/update/tooth/123")
+            .header("Authorization", "Bearer $token")
             .contentType(MediaType.APPLICATION_JSON)
             .content(jacksonObjectMapper().writeValueAsString(body)))
-
             .andExpect(status().isOk)
             .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(1)))
             .andExpect(jsonPath("$[0].number").value(1))
             .andExpect(jsonPath("$[0].up").value("HEALTHY"))
-
-
     }
 
     @Test
-    fun `all teeth should be an empty list`(){
+    fun `all teeth should be an empty list`() {
+        val token = getAccessToken()
 
-        mockMvc.perform(get("/allTooth"))
+        mockMvc.perform(get("/allTooth")
+            .header("Authorization", "Bearer $token"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(0)))
     }
-
 }

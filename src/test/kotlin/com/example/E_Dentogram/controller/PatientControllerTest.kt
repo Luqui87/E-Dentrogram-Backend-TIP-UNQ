@@ -1,9 +1,11 @@
 package com.example.E_Dentogram.controller
 
+import com.example.E_Dentogram.dto.AuthenticationResponse
 import com.example.E_Dentogram.model.Dentist
 import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.repository.DentistRepository
 import com.example.E_Dentogram.repository.PatientRepository
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.hamcrest.collection.IsCollectionWithSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.MediaType
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -23,26 +26,23 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDate
-
 @Testcontainers
 @AutoConfigureMockMvc
-@SpringBootTest(webEnvironment =  SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PatientControllerTest {
 
+    @Autowired
+    private lateinit var mockMVC: MockMvc
 
     @Autowired
-    private lateinit var mockMVC : MockMvc
+    private lateinit var patientRepository: PatientRepository
 
     @Autowired
-    private lateinit var patientRepository : PatientRepository
+    private lateinit var dentistRepository: DentistRepository
 
-    @Autowired
-    private lateinit var dentistRepository : DentistRepository
-
-    companion object{
+    companion object {
         @Container
         private val postgreSQLContainer = PostgreSQLContainer<Nothing>("postgres:latest")
-
 
         @JvmStatic
         @DynamicPropertySource
@@ -51,7 +51,6 @@ class PatientControllerTest {
             registry.add("spring.datasource.username", postgreSQLContainer::getUsername)
             registry.add("spring.datasource.password", postgreSQLContainer::getPassword)
         }
-
     }
 
     @BeforeEach
@@ -60,21 +59,48 @@ class PatientControllerTest {
         dentistRepository.deleteAll()
     }
 
+    private fun getTokenForUser(username: String, password: String): String {
+        val registerDTO = mapOf(
+            "username" to username,
+            "password" to password
+        )
+
+        val result = mockMVC.perform(post("/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(registerDTO)))
+            .andExpect(status().isCreated).andReturn()
+
+        val response = result.response.contentAsString
+        val tokenResponse = jacksonObjectMapper().readValue(response, AuthenticationResponse::class.java)
+
+        return tokenResponse.accessToken
+    }
+
     @Test
-    fun `should get no patients `(){
-        mockMVC.perform(get("/allPatients"))
+    fun `should get no patients`() {
+        val token = getTokenForUser("dentist1", "password1")
+
+        mockMVC.perform(
+            get("/allPatients").header("Authorization", "Bearer $token")
+        )
             .andDo(print())
             .andExpect(status().isOk)
             .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(0)))
     }
 
     @Test
-    fun `should get one patient`(){
-        val dentist = Dentist.DentistBuilder()
-            .username("User1")
-            .password("password1")
-            .patients(mutableListOf())
-            .build()
+    fun shouldGetOnePatient() {
+        val token = getTokenForUser("dentist1", "password1")
+
+        var dentist = dentistRepository.findByUsername("dentist2")
+        if (dentist == null) {
+            dentist = Dentist.DentistBuilder()
+                .username("dentist2")
+                .password("password2")
+                .patients(mutableListOf())
+                .build()
+            dentistRepository.save(dentist)
+        }
 
         val patient = Patient.PatientBuilder()
             .medicalRecord(123)
@@ -87,10 +113,9 @@ class PatientControllerTest {
             .dentist(dentist)
             .build()
 
-        dentistRepository.save(dentist)
         patientRepository.save(patient)
 
-        mockMVC.perform(get("/allPatients"))
+        mockMVC.perform(get("/allPatients").header("Authorization", "Bearer $token"))
             .andDo(print())
             .andExpect(status().isOk)
             .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(1)))
@@ -100,22 +125,30 @@ class PatientControllerTest {
     }
 
     @Test
-    fun `should not get specific patient`(){
+    fun `should not get specific patient`() {
+        val token = getTokenForUser("dentist1", "password1")
 
-        mockMVC.perform(get("/patient/123"))
+        mockMVC.perform(
+            get("/patient/123").header("Authorization", "Bearer $token")
+        )
             .andDo(print())
             .andExpect(status().isNotFound)
             .andExpect(status().reason("This patient does not exist"))
     }
 
     @Test
-    fun `should get the specific patient`(){
+    fun `should get the specific patient`() {
+        val token = getTokenForUser("dentist1", "password1")
 
-        val dentist = Dentist.DentistBuilder()
-            .username("User1")
-            .password("password1")
-            .patients(mutableListOf())
-            .build()
+        var dentist = dentistRepository.findByUsername("dentist1")
+        if (dentist == null) {
+            dentist = Dentist.DentistBuilder()
+                .username("dentist2")
+                .password("password2")
+                .patients(mutableListOf())
+                .build()
+            dentistRepository.save(dentist)
+        }
 
         val patient = Patient.PatientBuilder()
             .medicalRecord(123)
@@ -128,10 +161,11 @@ class PatientControllerTest {
             .dentist(dentist)
             .build()
 
-        dentistRepository.save(dentist)
         patientRepository.save(patient)
 
-        mockMVC.perform(get("/patient/123"))
+        mockMVC.perform(
+            get("/patient/123").header("Authorization", "Bearer $token")
+        )
             .andDo(print())
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.medicalRecord").value(123))
@@ -142,15 +176,22 @@ class PatientControllerTest {
             .andExpect(jsonPath("$.telephone").value(1153276406))
             .andExpect(jsonPath("$.email").value("lucas@mail.com"))
             .andExpect(jsonPath("$.teeth", IsCollectionWithSize.hasSize<Array<Any>>(0)))
-
     }
+
+
     @Test
-    fun `should get one simple patient`(){
-        val dentist = Dentist.DentistBuilder()
-            .username("User1")
-            .password("password1")
-            .patients(mutableListOf())
-            .build()
+    fun `should get one simple patient`() {
+        val token = getTokenForUser("dentist1", "password1")
+
+        var dentist = dentistRepository.findByUsername("dentist1")
+        if (dentist == null) {
+            dentist = Dentist.DentistBuilder()
+                .username("dentist2")
+                .password("password2")
+                .patients(mutableListOf())
+                .build()
+            dentistRepository.save(dentist)
+        }
 
         val patient = Patient.PatientBuilder()
             .medicalRecord(123)
@@ -163,10 +204,11 @@ class PatientControllerTest {
             .dentist(dentist)
             .build()
 
-        dentistRepository.save(dentist)
         patientRepository.save(patient)
 
-        mockMVC.perform(get("/allSimplePatients"))
+        mockMVC.perform(
+            get("/allSimplePatients").header("Authorization", "Bearer $token")
+        )
             .andDo(print())
             .andExpect(status().isOk)
             .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(1)))
@@ -179,20 +221,15 @@ class PatientControllerTest {
             .andExpect(jsonPath("$[0].email").value("lucas@mail.com"))
     }
 
-
     @Nested
     @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
     @AutoConfigureMockMvc
     @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
     inner class MockedRepositoryTest {
-
         @Autowired
         private lateinit var mockMVC: MockMvc
 
         @MockitoBean
         private lateinit var patientRepository: PatientRepository
-
-
     }
-
 }
