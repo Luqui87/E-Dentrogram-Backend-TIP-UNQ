@@ -12,7 +12,7 @@ INSERT INTO patient_table (dentist_id,medical_record, dni, name, address, birthd
 ON CONFLICT DO NOTHING;
 
 INSERT INTO tooth_table (patient_id, "number", "center", "down", "left", "right", "up") VALUES
-                        (215, 1, 0, 0, 2, 0, 0),
-                        (215, 2, 2, 0, 2, 1, 0),
-                        (215, 23, 1, 0, 2, 1, 0)
+                        (215, 1, 'HEALTHY', 'HEALTHY', 'CARIES', 'HEALTHY', 'HEALTHY'),
+                        (215, 2, 'CARIES', 'HEALTHY', 'CARIES', 'RESTORATION', 'HEALTHY'),
+                        (215, 23, 'RESTORATION', 'HEALTHY', 'CARIES', 'RESTORATION', 'HEALTHY')
 ON CONFLICT DO NOTHING;

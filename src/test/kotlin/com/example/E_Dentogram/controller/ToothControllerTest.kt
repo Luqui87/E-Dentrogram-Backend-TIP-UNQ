@@ -1,10 +1,7 @@
 package com.example.E_Dentogram.controller
 
 import com.example.E_Dentogram.dto.AuthenticationResponse
-import com.example.E_Dentogram.model.Dentist
-import com.example.E_Dentogram.model.Patient
-import com.example.E_Dentogram.model.Tooth
-import com.example.E_Dentogram.model.ToothState
+import com.example.E_Dentogram.model.*
 import com.example.E_Dentogram.repository.DentistRepository
 import com.example.E_Dentogram.repository.PatientRepository
 import com.example.E_Dentogram.repository.ThoothRepository
@@ -133,11 +130,11 @@ class ToothControllerTest {
         val tooth = Tooth.ToothBuilder()
             .patient(patient)
             .number(1)
-            .up(ToothState.HEALTHY)
-            .left(ToothState.HEALTHY)
-            .center(ToothState.HEALTHY)
-            .right(ToothState.HEALTHY)
-            .down(ToothState.HEALTHY)
+            .up(PartialToothState.HEALTHY)
+            .left(PartialToothState.HEALTHY)
+            .center(PartialToothState.HEALTHY)
+            .right(PartialToothState.HEALTHY)
+            .down(PartialToothState.HEALTHY)
             .build()
 
         toothRepository.save(tooth)

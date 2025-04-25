@@ -1,11 +1,25 @@
 package com.example.E_Dentogram.model
 
 interface ToothState {
-    fun name(): String
     fun combineWith(otherState: ToothState): ToothState
 
     fun combineWithPartial(partial: PartialToothState): ToothState
     fun combineWithTotal(total: TotalToothState): ToothState
+
+}
+
+object ToothStateParser {
+    fun stringToState(state: String): ToothState {
+        return try {
+            TotalToothState.stringToState(state)
+        } catch (e: IllegalArgumentException) {
+            try {
+                PartialToothState.stringToState(state)
+            } catch (e: IllegalArgumentException) {
+                throw IllegalArgumentException("Invalid tooth state: $state")
+            }
+        }
+    }
 }
 
 // T - T
@@ -39,7 +53,6 @@ enum class TotalToothState : ToothState {
     MISSING,
     EXTRACTION;
 
-    override fun name(): String = this.name
 
     override fun combineWith(otherState: ToothState): ToothState {
         return otherState.combineWithTotal(this)
@@ -66,8 +79,6 @@ enum class PartialToothState : ToothState {
     RESTORATION,
     CARIES;
 
-
-    override fun name(): String = this.name
 
     override fun combineWith(otherState: ToothState): ToothState {
         return otherState.combineWithPartial(this)

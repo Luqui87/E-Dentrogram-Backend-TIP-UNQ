@@ -3,10 +3,10 @@ package com.example.E_Dentogram.service
 import com.example.E_Dentogram.dto.ToothDTO
 import com.example.E_Dentogram.model.Tooth
 import com.example.E_Dentogram.model.ToothState
+import com.example.E_Dentogram.model.ToothStateParser
 import com.example.E_Dentogram.repository.PatientRepository
 import com.example.E_Dentogram.repository.ThoothRepository
 import jakarta.annotation.Generated
-
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -44,27 +44,45 @@ class ToothService {
 
     fun updateTeeth(medicalRecord: Int, teethDTO: List<ToothDTO>): List<ToothDTO> {
         val patient = patientRepository.findById(medicalRecord)
-        .orElseThrow {  throw ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist")}
+            .orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist") }
+
+        val existingTeeth = toothRepository.findByPatientMedicalRecord(medicalRecord).associateBy { tooth -> tooth.number }
 
         val updatedTeeth = try {
-            teethDTO.map { tooth ->
+            teethDTO.map { toothDTO ->
+                val existingTooth = existingTeeth[toothDTO.number]
+
+                val up = combineStates(existingTooth?.up, ToothStateParser.stringToState(toothDTO.up))
+                val right = combineStates(existingTooth?.right, ToothStateParser.stringToState(toothDTO.right))
+                val down = combineStates(existingTooth?.down, ToothStateParser.stringToState(toothDTO.down))
+                val left = combineStates(existingTooth?.left, ToothStateParser.stringToState(toothDTO.left))
+                val center = combineStates(existingTooth?.center, ToothStateParser.stringToState(toothDTO.center))
+
                 Tooth.ToothBuilder()
-                    .number(tooth.number)
+                    .number(toothDTO.number)
                     .patient(patient)
-                    .up(ToothState.stringToState(tooth.up))
-                    .left(ToothState.stringToState(tooth.left))
-                    .center(ToothState.stringToState(tooth.center))
-                    .right(ToothState.stringToState(tooth.right))
-                    .down(ToothState.stringToState(tooth.down))
+                    .up(up)
+                    .right(right)
+                    .down(down)
+                    .left(left)
+                    .center(center)
                     .build()
             }
         } catch (e: Exception) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid data provided for teeth update", e)
         }
 
-         val saveTeeth = toothRepository.saveAll(updatedTeeth)
+        val savedTeeth = toothRepository.saveAll(updatedTeeth)
 
-        return saveTeeth.map { tooth -> ToothDTO.fromModel(tooth) }
+        return savedTeeth.map { tooth -> ToothDTO.fromModel(tooth) }
+    }
+
+    private fun combineStates(oldState: ToothState?, newState: ToothState): ToothState {
+        return if (oldState == null) {
+            newState
+        } else {
+            oldState.combineWith(newState)
+        }
     }
 
 }
