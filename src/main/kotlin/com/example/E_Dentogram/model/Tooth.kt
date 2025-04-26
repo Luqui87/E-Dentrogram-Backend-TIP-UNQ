@@ -11,18 +11,23 @@ class Tooth(builder: ToothBuilder) {
     var number: Int? = builder.number
 
     @Column
+    @Convert(converter = ToothStateConverter::class)
     var up : ToothState? = builder.up
 
     @Column
+    @Convert(converter = ToothStateConverter::class)
     var right : ToothState? = builder.right
 
     @Column
+    @Convert(converter = ToothStateConverter::class)
     var down : ToothState? = builder.down
 
     @Column
+    @Convert(converter = ToothStateConverter::class)
     var left : ToothState? = builder.left
 
     @Column
+    @Convert(converter = ToothStateConverter::class)
     var center : ToothState? = builder.center
 
     @JsonIgnore

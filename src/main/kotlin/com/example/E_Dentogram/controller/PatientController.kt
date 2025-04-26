@@ -6,7 +6,6 @@ import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.service.PatientService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -19,14 +18,14 @@ class PatientController {
 
 
     @Operation(summary = "Get all Patients")
-    @GetMapping("/allPatients")
+    @GetMapping("/allPatients") //Borrar
     fun allPatients(): ResponseEntity<List<Patient>> {
         val patients = service.allPatients()
         return ResponseEntity.ok(patients)
     }
 
     @Operation(summary = "Get all Patients without their teeth")
-    @GetMapping("/allSimplePatients")
+    @GetMapping("/allSimplePatients") //Borrar
     fun allSimplePatients(): ResponseEntity<List<PatientDTO>> {
         val patients = service.allSimplePatients()
         return ResponseEntity.ok(patients)
@@ -37,13 +36,6 @@ class PatientController {
     fun getPatient(@PathVariable patientMedicalRecord: Int): ResponseEntity<Patient> {
         val patient = service.getPatient(patientMedicalRecord)
         return ResponseEntity.ok(patient)
-    }
-
-    @Operation(summary = "Register patient")
-    @PostMapping("/patient/{patientMedicalRecord}")
-    fun createPatient(@RequestBody patientDTO: PatientDTO): ResponseEntity<PatientDTO> {
-        val patDTO = service.createPatient(patientDTO)
-        return ResponseEntity(patDTO, HttpStatus.CREATED)
     }
 
 
