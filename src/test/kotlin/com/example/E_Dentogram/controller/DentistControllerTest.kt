@@ -134,7 +134,7 @@ class DentistControllerTest{
 
         val registeredDentist = dentistRepository.findByUsername("User1")!!
 
-        mockMVC.perform(get("/dentist/${registeredDentist.id}")
+        mockMVC.perform(get("/dentist/user")
                 .header("Authorization", "Bearer $accessToken")
         )
             .andDo(MockMvcResultHandlers.print())
@@ -190,7 +190,7 @@ class DentistControllerTest{
 
         val registeredDentist = dentistRepository.findByUsername("User1")!!
 
-        mockMVC.perform(put("/dentist/add/${registeredDentist.id}")
+        mockMVC.perform(post("/dentist/add/${registeredDentist.id}")
             .header("Authorization", "Bearer $accessToken")
             .contentType(MediaType.APPLICATION_JSON)
             .content(jacksonObjectMapper().writeValueAsString(body)))
@@ -224,7 +224,7 @@ class DentistControllerTest{
         val accessToken = this.getTokenForUser(dentist)
         val registeredDentist = dentistRepository.findByUsername("User1")!!
 
-        mockMVC.perform(put("/dentist/add/${registeredDentist.id}")
+        mockMVC.perform(post("/dentist/add/${registeredDentist.id}")
             .header("Authorization", "Bearer $accessToken")
             .contentType(MediaType.APPLICATION_JSON)
             .content(jacksonObjectMapper().writeValueAsString(body)))

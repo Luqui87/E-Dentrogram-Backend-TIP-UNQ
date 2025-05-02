@@ -24,8 +24,8 @@ class DentistController {
     }
 
     @Operation(summary = "Get Dentist")
-    @GetMapping("/dentist/{username}")
-    fun getDentist(@PathVariable username: String, @RequestHeader("Authorization") token: String): ResponseEntity<DentistDTO> {
+    @GetMapping("/dentist/user")
+    fun getDentist(@RequestHeader("Authorization") token: String): ResponseEntity<DentistDTO> {
 
         val dentist = service.getDentist(token)
         return ResponseEntity.ok(dentist)
@@ -39,7 +39,7 @@ class DentistController {
     }
 
     @Operation(summary = "add patient to Dentist ")
-    @PutMapping("/dentist/add/{dentistId}")
+    @PostMapping("/dentist/add/{dentistId}")
     fun addPatient(@PathVariable dentistId: Long,@RequestBody patientDTO: PatientDTO): ResponseEntity<DentistDTO> {
         val dentist = service.addPatient(dentistId,patientDTO)
         return ResponseEntity.ok(dentist)
