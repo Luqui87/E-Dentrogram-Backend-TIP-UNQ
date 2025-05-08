@@ -6,9 +6,9 @@ services:
     container_name: postgres_db
     restart: always
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=root
-      - POSTGRES_DB=dentogrambase
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: dentogrambase
     ports:
       - "5433:5432"
     volumes:
@@ -23,17 +23,19 @@ services:
       - app-network
 
   app:
-    image: springboot-app
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: springboot_app
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/dentogrambase
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: root
-      SPRING_DATASOURCE_DRIVER-CLASS-NAME: org.postgresql.Driver
     networks:
       - app-network
 
