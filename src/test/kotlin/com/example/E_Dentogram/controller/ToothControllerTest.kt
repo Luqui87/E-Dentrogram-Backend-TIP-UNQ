@@ -4,7 +4,7 @@ import com.example.E_Dentogram.dto.AuthenticationResponse
 import com.example.E_Dentogram.model.*
 import com.example.E_Dentogram.repository.DentistRepository
 import com.example.E_Dentogram.repository.PatientRepository
-import com.example.E_Dentogram.repository.ThoothRepository
+import com.example.E_Dentogram.repository.ToothRepository
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.hamcrest.collection.IsCollectionWithSize
 import org.junit.jupiter.api.BeforeEach
@@ -35,7 +35,7 @@ class ToothControllerTest {
     private lateinit var patientRepository: PatientRepository
 
     @Autowired
-    private lateinit var toothRepository: ThoothRepository
+    private lateinit var toothRepository: ToothRepository
 
     @Autowired
     private lateinit var dentistRepository: DentistRepository
