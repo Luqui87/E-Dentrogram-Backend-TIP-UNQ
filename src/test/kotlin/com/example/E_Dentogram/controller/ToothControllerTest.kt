@@ -167,7 +167,8 @@ class ToothControllerTest {
                 "right" to "HEALTHY",
                 "down" to "HEALTHY",
                 "left" to "HEALTHY",
-                "center" to "HEALTHY"
+                "center" to "HEALTHY",
+                "special" to "NOTHING"
             )
         )
 
@@ -191,7 +192,8 @@ class ToothControllerTest {
                 "right" to "HEALTHY",
                 "down" to "HEALTHY",
                 "left" to "HEALTHY",
-                "center" to "HEALTHY"
+                "center" to "HEALTHY",
+                "special" to "NOTHING"
             )
         )
 

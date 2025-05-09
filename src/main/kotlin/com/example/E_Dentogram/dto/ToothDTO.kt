@@ -1,7 +1,6 @@
 package com.example.E_Dentogram.dto
 
 import com.example.E_Dentogram.model.Tooth
-import java.time.LocalDate
 
 class ToothDTO(
     val number: Int,
@@ -9,7 +8,8 @@ class ToothDTO(
     val right: String,
     val down: String,
     val left: String,
-    val center: String
+    val center: String,
+    val special: String
 ) {
     companion object{
     fun fromModel(tooth:Tooth): ToothDTO{
@@ -19,7 +19,8 @@ class ToothDTO(
             tooth.right.toString(),
             tooth.down.toString(),
             tooth.left.toString(),
-            tooth.center.toString()
+            tooth.center.toString(),
+            tooth.special.toString()
         )
     }
     }

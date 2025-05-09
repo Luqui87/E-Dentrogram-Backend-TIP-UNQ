@@ -75,6 +75,13 @@ class ToothTest{
     }
 
     @Test
+    fun `should create a tooth with a valid special`() {
+        val tooth = Tooth.ToothBuilder().special(SpecialToothState.NOTHING)
+
+        assertEquals(SpecialToothState.NOTHING, tooth.special)
+    }
+
+    @Test
     fun `should create a tooth with a valid Patient`() {
         val patient = mock(Patient::class.java)
 
