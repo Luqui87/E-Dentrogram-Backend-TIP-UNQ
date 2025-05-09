@@ -5,8 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface ThoothRepository : JpaRepository<Tooth,Int> {
+interface ToothRepository : JpaRepository<Tooth,Int> {
 
     fun findByPatientMedicalRecord(medicalRecord: Int): List<Tooth>
+
+    fun findByNumberAndPatientMedicalRecord(medicalRecord: Int, patientId: Int): Tooth?
+
 
 }
