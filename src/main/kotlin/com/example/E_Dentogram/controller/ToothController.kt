@@ -31,8 +31,8 @@ class ToothController{
 
     @Operation(summary = "update teeth ")
     @PutMapping("/update/tooth/{medicalRecord}")
-    fun updateTeeth(@PathVariable medicalRecord: Int,@RequestBody teethDTO: List<ToothDTO>): List<ToothDTO> {
-        val updatedTeeth = service.updateTeeth(medicalRecord,teethDTO)
+    fun updateTeeth(@PathVariable medicalRecord: Int,@RequestBody toothDTO: ToothDTO): ToothDTO {
+        val updatedTeeth = service.updateTeeth(medicalRecord,toothDTO)
         return updatedTeeth
     }
 

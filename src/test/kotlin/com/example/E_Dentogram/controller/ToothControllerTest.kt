@@ -4,7 +4,7 @@ import com.example.E_Dentogram.dto.AuthenticationResponse
 import com.example.E_Dentogram.model.*
 import com.example.E_Dentogram.repository.DentistRepository
 import com.example.E_Dentogram.repository.PatientRepository
-import com.example.E_Dentogram.repository.ThoothRepository
+import com.example.E_Dentogram.repository.ToothRepository
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.hamcrest.collection.IsCollectionWithSize
 import org.junit.jupiter.api.BeforeEach
@@ -35,7 +35,7 @@ class ToothControllerTest {
     private lateinit var patientRepository: PatientRepository
 
     @Autowired
-    private lateinit var toothRepository: ThoothRepository
+    private lateinit var toothRepository: ToothRepository
 
     @Autowired
     private lateinit var dentistRepository: DentistRepository
@@ -160,7 +160,7 @@ class ToothControllerTest {
         this.createPatient()
         val token = this.getAccessToken()
 
-        val body = listOf(
+        val body =
             mapOf(
                 "number" to "1",
                 "up" to "STATE",  // Este es un valor incorrecto
@@ -170,7 +170,6 @@ class ToothControllerTest {
                 "center" to "HEALTHY",
                 "special" to "NOTHING"
             )
-        )
 
         mockMvc.perform(put("/update/tooth/123")
             .header("Authorization", "Bearer $token")
@@ -185,7 +184,7 @@ class ToothControllerTest {
         this.createPatient()
         val token = this.getAccessToken()
 
-        val body = listOf(
+        val body =
             mapOf(
                 "number" to "1",
                 "up" to "HEALTHY",
@@ -195,16 +194,14 @@ class ToothControllerTest {
                 "center" to "HEALTHY",
                 "special" to "NOTHING"
             )
-        )
 
         mockMvc.perform(put("/update/tooth/123")
             .header("Authorization", "Bearer $token")
             .contentType(MediaType.APPLICATION_JSON)
             .content(jacksonObjectMapper().writeValueAsString(body)))
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(1)))
-            .andExpect(jsonPath("$[0].number").value(1))
-            .andExpect(jsonPath("$[0].up").value("HEALTHY"))
+            .andExpect(jsonPath("$.number").value(1))
+            .andExpect(jsonPath("$.up").value("HEALTHY"))
     }
 
     @Test
