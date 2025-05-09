@@ -160,7 +160,7 @@ class ToothControllerTest {
         this.createPatient()
         val token = this.getAccessToken()
 
-        val body = listOf(
+        val body =
             mapOf(
                 "number" to "1",
                 "up" to "STATE",  // Este es un valor incorrecto
@@ -169,7 +169,6 @@ class ToothControllerTest {
                 "left" to "HEALTHY",
                 "center" to "HEALTHY"
             )
-        )
 
         mockMvc.perform(put("/update/tooth/123")
             .header("Authorization", "Bearer $token")
@@ -184,7 +183,7 @@ class ToothControllerTest {
         this.createPatient()
         val token = this.getAccessToken()
 
-        val body = listOf(
+        val body =
             mapOf(
                 "number" to "1",
                 "up" to "HEALTHY",
@@ -193,16 +192,14 @@ class ToothControllerTest {
                 "left" to "HEALTHY",
                 "center" to "HEALTHY"
             )
-        )
 
         mockMvc.perform(put("/update/tooth/123")
             .header("Authorization", "Bearer $token")
             .contentType(MediaType.APPLICATION_JSON)
             .content(jacksonObjectMapper().writeValueAsString(body)))
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(1)))
-            .andExpect(jsonPath("$[0].number").value(1))
-            .andExpect(jsonPath("$[0].up").value("HEALTHY"))
+            .andExpect(jsonPath("$.number").value(1))
+            .andExpect(jsonPath("$.up").value("HEALTHY"))
     }
 
     @Test
