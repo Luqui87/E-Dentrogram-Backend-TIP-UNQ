@@ -43,7 +43,8 @@ class DentistService(
         val dentistDTOs = dentists.map {
             dentist -> DentistSimpleDTO(
                 username = dentist.username!!,
-                password = dentist.password!!)
+                password = dentist.password!!,
+                email = dentist.email!!)
         }
         return dentistDTOs
     }
@@ -117,6 +118,7 @@ class DentistService(
         val dentist = Dentist.DentistBuilder()
             .username(dentistDTO.username)
             .password(encoder.encode(dentistDTO.password))
+            .email(dentistDTO.email)
             .build()
 
         dentistRepository.save(dentist)

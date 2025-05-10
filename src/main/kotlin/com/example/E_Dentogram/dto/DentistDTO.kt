@@ -6,6 +6,7 @@ import com.example.E_Dentogram.model.Patient
 class DentistDTO(
     val dentistID: Long,
     val username: String,
+    val email: String,
     val patients: List<PatientDTO>
 ){
 
@@ -25,6 +26,7 @@ class DentistDTO(
             val dentistdto = DentistDTO(
                 dentistID = dentist.id!!,
                 username = dentist.username!!,
+                email = dentist.email!!,
                 patients = patientDTOs
             )
             return dentistdto

@@ -57,7 +57,8 @@ class DentistControllerTest{
     private fun getToken(): String {
         val registerDTO = mapOf(
             "username" to "User2000",
-            "password" to "password2000"
+            "password" to "password2000",
+            "email" to "User2000@gmail.com"
         )
 
         val result = mockMVC.perform(post("/register")
@@ -73,7 +74,8 @@ class DentistControllerTest{
     private fun getTokenForUser(dentist: Dentist): String {
         val registerDTO = mapOf(
             "username" to dentist.username,
-            "password" to dentist.password
+            "password" to dentist.password,
+            "email" to dentist.email
         )
 
         val result = mockMVC.perform(post("/register")
@@ -127,6 +129,7 @@ class DentistControllerTest{
         val dentist = Dentist.DentistBuilder()
             .username("User1")
             .password("password1")
+            .email("User1@gmail.com")
             .patients(mutableListOf())
             .build()
 
@@ -151,12 +154,14 @@ class DentistControllerTest{
         val dentist = Dentist.DentistBuilder()
             .username("User1")
             .password("password1")
+            .email("User1@gmail.com")
             .patients(mutableListOf())
             .build()
 
         val otherDentist = Dentist.DentistBuilder()
             .username("User2")
             .password("password2")
+            .email("User2@gmail.com")
             .patients(mutableListOf())
             .build()
 
@@ -207,6 +212,7 @@ class DentistControllerTest{
         val dentist = Dentist.DentistBuilder()
             .username("User1")
             .password("password1")
+            .email("User1@gmail.com")
             .patients(mutableListOf())
             .build()
 
@@ -243,6 +249,7 @@ class DentistControllerTest{
         val dentist = Dentist.DentistBuilder()
             .username("User1")
             .password("password1")
+            .email("User1@gmail.com")
             .patients(mutableListOf())
             .build()
 
@@ -274,12 +281,14 @@ class DentistControllerTest{
         val dentist = Dentist.DentistBuilder()
             .username("User1")
             .password("password1")
+            .email("User1@gmail.com")
             .patients(mutableListOf())
             .build()
 
         val otherDentist = Dentist.DentistBuilder()
             .username("User2")
             .password("password2")
+            .email("User2@gmail.com")
             .patients(mutableListOf())
             .build()
 

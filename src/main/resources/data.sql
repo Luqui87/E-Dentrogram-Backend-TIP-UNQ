@@ -1,6 +1,6 @@
-INSERT INTO dentist_table (id, username, password, role) VALUES
-                        (1, 'User1', '$2a$10$Cgy3bxDG3Anp5pmEzVX.CuplTtqri/BgCy2UIzpJXTw7ZicAfkGqy',0),
-                        (2, 'User2', '$2a$10$Yv77WND4ZhFQZLXT11jk8Ow/zgJeYfdHwd/DbSuHTPR0UCU1B.tJG',0)
+INSERT INTO dentist_table (id, username, password, email,role) VALUES
+                        (1, 'User1', '$2a$10$Cgy3bxDG3Anp5pmEzVX.CuplTtqri/BgCy2UIzpJXTw7ZicAfkGqy','User01@gmail.com',0),
+                        (2, 'User2', '$2a$10$Yv77WND4ZhFQZLXT11jk8Ow/zgJeYfdHwd/DbSuHTPR0UCU1B.tJG','User02@gmail.com',0)
 ON CONFLICT DO NOTHING;
 
 INSERT INTO patient_table (dentist_id,medical_record, dni, name, address, birthdate, telephone, email) VALUES

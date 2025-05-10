@@ -59,10 +59,11 @@ class PatientControllerTest {
         dentistRepository.deleteAll()
     }
 
-    private fun getTokenForUser(username: String, password: String): String {
+    private fun getTokenForUser(username: String, password: String,email:String): String {
         val registerDTO = mapOf(
             "username" to username,
-            "password" to password
+            "password" to password,
+            "email" to email
         )
 
         val result = mockMVC.perform(post("/register")
@@ -78,7 +79,7 @@ class PatientControllerTest {
 
     @Test
     fun `should get no patients`() {
-        val token = getTokenForUser("dentist1", "password1")
+        val token = getTokenForUser("dentist1", "password1","User1@gmail.com")
 
         mockMVC.perform(
             get("/allPatients").header("Authorization", "Bearer $token")
@@ -90,13 +91,14 @@ class PatientControllerTest {
 
     @Test
     fun shouldGetOnePatient() {
-        val token = getTokenForUser("dentist1", "password1")
+        val token = getTokenForUser("dentist1", "password1","User1@gmail.com")
 
         var dentist = dentistRepository.findByUsername("dentist2")
         if (dentist == null) {
             dentist = Dentist.DentistBuilder()
                 .username("dentist2")
                 .password("password2")
+                .email("User2@gmail.com")
                 .patients(mutableListOf())
                 .build()
             dentistRepository.save(dentist)
@@ -126,7 +128,7 @@ class PatientControllerTest {
 
     @Test
     fun `should not get specific patient`() {
-        val token = getTokenForUser("dentist1", "password1")
+        val token = getTokenForUser("dentist1", "password1","User1@gmail.com")
 
         mockMVC.perform(
             get("/patient/123").header("Authorization", "Bearer $token")
@@ -138,7 +140,7 @@ class PatientControllerTest {
 
     @Test
     fun `should get the specific patient`() {
-        val token = getTokenForUser("dentist1", "password1")
+        val token = getTokenForUser("dentist1", "password1","User1@gmail.com")
 
         var dentist = dentistRepository.findByUsername("dentist1")
         if (dentist == null) {
@@ -181,7 +183,7 @@ class PatientControllerTest {
 
     @Test
     fun `should get one simple patient`() {
-        val token = getTokenForUser("dentist1", "password1")
+        val token = getTokenForUser("dentist1", "password1","User1@gmail.com")
 
         var dentist = dentistRepository.findByUsername("dentist1")
         if (dentist == null) {
