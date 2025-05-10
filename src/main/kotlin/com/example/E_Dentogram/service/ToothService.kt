@@ -1,6 +1,7 @@
 package com.example.E_Dentogram.service
 
 import com.example.E_Dentogram.dto.ToothDTO
+import com.example.E_Dentogram.model.SpecialToothState
 import com.example.E_Dentogram.model.Tooth
 import com.example.E_Dentogram.model.ToothState
 import com.example.E_Dentogram.model.ToothStateParser
@@ -63,6 +64,7 @@ class ToothService {
                 .down(down)
                 .left(left)
                 .center(center)
+                .special(SpecialToothState.stringToState(toothDTO.special))
                 .build()
         } catch (e: Exception) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid data provided for teeth update", e)

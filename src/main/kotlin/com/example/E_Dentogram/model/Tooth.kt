@@ -30,6 +30,9 @@ class Tooth(builder: ToothBuilder) {
     @Convert(converter = ToothStateConverter::class)
     var center : ToothState? = builder.center
 
+    @Column
+    var special : SpecialToothState? = builder.special
+
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
@@ -48,6 +51,8 @@ class Tooth(builder: ToothBuilder) {
         var left: ToothState? = null
             private set
         var center: ToothState? = null
+            private set
+        var special: SpecialToothState? = null
             private set
         var patient: Patient? = null
             private set
@@ -76,6 +81,10 @@ class Tooth(builder: ToothBuilder) {
 
         fun center(center: ToothState) = apply {
             this.center = center
+        }
+
+        fun special(special: SpecialToothState) = apply {
+            this.special = special
         }
 
         fun patient(patient: Patient) = apply {

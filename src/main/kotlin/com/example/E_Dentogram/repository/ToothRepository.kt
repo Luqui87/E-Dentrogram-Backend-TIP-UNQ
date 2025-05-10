@@ -11,5 +11,4 @@ interface ToothRepository : JpaRepository<Tooth,Int> {
 
     fun findByNumberAndPatientMedicalRecord(medicalRecord: Int, patientId: Int): Tooth?
 
-
 }

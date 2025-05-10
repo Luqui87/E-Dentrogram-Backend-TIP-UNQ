@@ -167,7 +167,8 @@ class ToothControllerTest {
                 "right" to "HEALTHY",
                 "down" to "HEALTHY",
                 "left" to "HEALTHY",
-                "center" to "HEALTHY"
+                "center" to "HEALTHY",
+                "special" to "NOTHING"
             )
 
         mockMvc.perform(put("/update/tooth/123")
@@ -190,7 +191,8 @@ class ToothControllerTest {
                 "right" to "HEALTHY",
                 "down" to "HEALTHY",
                 "left" to "HEALTHY",
-                "center" to "HEALTHY"
+                "center" to "HEALTHY",
+                "special" to "NOTHING"
             )
 
         mockMvc.perform(put("/update/tooth/123")
