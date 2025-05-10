@@ -88,7 +88,7 @@ enum class PartialToothState : ToothState {
     }
 
     override fun combineWithTotal(total: TotalToothState): ToothState {
-        return total
+        return if (total == TotalToothState.HEALTHFUL) {this} else {total}
     }
 
     override fun combineWithPartial(partial: PartialToothState): ToothState {
