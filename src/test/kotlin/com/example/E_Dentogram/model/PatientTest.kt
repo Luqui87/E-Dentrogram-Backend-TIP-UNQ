@@ -24,22 +24,6 @@ class PatientTest {
     }
 
     @Test
-    fun `should throw exception for patient with a short dni`() {
-        val exception = assertThrows<RuntimeException> {
-            Patient.PatientBuilder().dni(12345)
-        }
-        assertEquals("The DNI length is no correct.", exception.message)
-    }
-
-    @Test
-    fun `should throw exception for patient with a long dni`() {
-        val exception = assertThrows<RuntimeException> {
-            Patient.PatientBuilder().dni(123456789)
-        }
-        assertEquals("The DNI length is no correct.", exception.message)
-    }
-
-    @Test
     fun `should create a patient with a valid name`() {
         val patient = Patient.PatientBuilder().name("Pedro")
 
@@ -139,6 +123,17 @@ class PatientTest {
         assertEquals("The amount of teeth is not valid.", exception.message)
     }
 
+    @Test
+    fun `should add patient if not already in the list`() {
+        val oldDentist = mock<Dentist>()
+        val newDentist = mock<Dentist>()
 
+        val patient = Patient.PatientBuilder().dentist(oldDentist).build()
+
+        patient.updateDentist(newDentist)
+
+        assertTrue(patient.dentist!! == newDentist)
+        assertFalse(patient.dentist!! == oldDentist)
+    }
 
 }

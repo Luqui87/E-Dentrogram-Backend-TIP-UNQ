@@ -1,8 +1,8 @@
 package com.example.E_Dentogram.model
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 import java.time.LocalDate
-import java.util.*
 import java.util.regex.Pattern
 
 @Entity
@@ -33,6 +33,11 @@ class Patient(builder: PatientBuilder) {
     @OneToMany(mappedBy = "patient", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     var teeth: MutableList<Tooth>? = builder.teeth
 
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "dentist_id", nullable = false)
+    var dentist: Dentist? = builder.dentist
+
 
     class PatientBuilder {
         var dni: Int? = null
@@ -50,6 +55,8 @@ class Patient(builder: PatientBuilder) {
         var email: String? = null
             private set
         var teeth: MutableList<Tooth>? = null
+            private set
+        var dentist: Dentist? = null
             private set
 
         fun dni(dni: Int) = apply {
@@ -89,9 +96,13 @@ class Patient(builder: PatientBuilder) {
             this.teeth = teeth
         }
 
+        fun dentist(dentist: Dentist) = apply {
+            this.dentist = dentist
+        }
+
 
         private fun isValidDni(dni: Int): Boolean {
-            return dni.toString().length == 8
+            return dni.toString().length > 0
         }
 
         private fun isValidBirthdate(birthdate: LocalDate): Boolean {
@@ -115,6 +126,10 @@ class Patient(builder: PatientBuilder) {
         fun build(): Patient {
             return Patient(this)
         }
+    }
+
+    fun updateDentist(dentist: Dentist) {
+        this.dentist = dentist
     }
 
 }

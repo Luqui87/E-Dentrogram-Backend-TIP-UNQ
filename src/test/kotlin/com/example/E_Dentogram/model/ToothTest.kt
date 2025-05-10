@@ -41,37 +41,44 @@ class ToothTest{
 
     @Test
     fun `should create a tooth with a valid up`() {
-        val tooth = Tooth.ToothBuilder().up(ToothState.HEALTHY)
+        val tooth = Tooth.ToothBuilder().up(PartialToothState.HEALTHY)
 
-        assertEquals(ToothState.HEALTHY, tooth.up)
+        assertEquals(PartialToothState.HEALTHY, tooth.up)
     }
 
     @Test
     fun `should create a tooth with a valid right`() {
-        val tooth = Tooth.ToothBuilder().right(ToothState.HEALTHY)
+        val tooth = Tooth.ToothBuilder().right(PartialToothState.HEALTHY)
 
-        assertEquals(ToothState.HEALTHY, tooth.right)
+        assertEquals(PartialToothState.HEALTHY, tooth.right)
     }
 
     @Test
     fun `should create a tooth with a valid down`() {
-        val tooth = Tooth.ToothBuilder().down(ToothState.HEALTHY)
+        val tooth = Tooth.ToothBuilder().down(PartialToothState.HEALTHY)
 
-        assertEquals(ToothState.HEALTHY, tooth.down)
+        assertEquals(PartialToothState.HEALTHY, tooth.down)
     }
 
     @Test
     fun `should create a tooth with a valid left`() {
-        val tooth = Tooth.ToothBuilder().left(ToothState.HEALTHY)
+        val tooth = Tooth.ToothBuilder().left(PartialToothState.HEALTHY)
 
-        assertEquals(ToothState.HEALTHY, tooth.left)
+        assertEquals(PartialToothState.HEALTHY, tooth.left)
     }
 
     @Test
     fun `should create a tooth with a valid center`() {
-        val tooth = Tooth.ToothBuilder().center(ToothState.HEALTHY)
+        val tooth = Tooth.ToothBuilder().center(PartialToothState.HEALTHY)
 
-        assertEquals(ToothState.HEALTHY, tooth.center)
+        assertEquals(PartialToothState.HEALTHY, tooth.center)
+    }
+
+    @Test
+    fun `should create a tooth with a valid special`() {
+        val tooth = Tooth.ToothBuilder().special(SpecialToothState.NOTHING)
+
+        assertEquals(SpecialToothState.NOTHING, tooth.special)
     }
 
     @Test
