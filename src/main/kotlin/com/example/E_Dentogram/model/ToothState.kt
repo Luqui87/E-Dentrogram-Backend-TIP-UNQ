@@ -51,6 +51,9 @@ object ToothStateParser {
 enum class TotalToothState : ToothState {
     HEALTHFUL,
     MISSING,
+    MISSING_NO_ERUPTION,
+    TO_ERUPT,
+    IMPLANT,
     EXTRACTION;
 
 
