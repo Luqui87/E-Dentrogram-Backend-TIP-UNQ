@@ -9,9 +9,14 @@ import com.example.E_Dentogram.model.Dentist
 import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.repository.DentistRepository
 import com.example.E_Dentogram.repository.PatientRepository
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.gson.GsonFactory
 import jakarta.annotation.Generated
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -29,6 +34,9 @@ class DentistService(
 
     @Autowired
     private lateinit var encoder: PasswordEncoder
+
+    @Value("\${google.client.clientId}")
+    private val clientId: String? = null
 
     @Autowired
     lateinit var dentistRepository : DentistRepository
@@ -52,7 +60,7 @@ class DentistService(
     @Transactional(readOnly=true)
     fun getDentist(token: String): DentistDTO {
         val username = tokenService.extractUsername(token.substringAfter("Bearer "))
-            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED,"Hola")
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
 
         val dentist = dentistRepository.findByUsername(username)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist")
@@ -132,4 +140,44 @@ class DentistService(
         return AuthenticationResponse(accessToken = token)
     }
 
+    fun signUpGoogle(token: String): AuthenticationResponse? {
+
+        val idTokenString = token.replace("\"", "")
+
+        val transport = NetHttpTransport()
+        val jsonFactory = GsonFactory.getDefaultInstance()
+
+        val verifier = GoogleIdTokenVerifier.Builder(transport, jsonFactory)
+            .setAudience(Collections.singletonList(clientId))
+            .build()
+
+        val idToken = verifier.verify(idTokenString)
+        if (idToken != null) {
+            val payload = idToken.payload
+            val email = payload.email
+
+            if (dentistRepository.existsDentistByEmail(email)) {
+                throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "This user already exists")
+            }
+
+            val dentist = Dentist.DentistBuilder()
+                .username(UUID.randomUUID().toString())
+                .email(email)
+                .password(UUID.randomUUID().toString())
+                .build()
+
+             dentistRepository.save(dentist)
+
+            val userDetails = userDetailService.loadUserByUsername(dentist.email!!)
+            val accessToken = tokenService.generate(
+                userDetails,
+                Date(System.currentTimeMillis() + jwtProperties.accessTokenExpiration)
+            )
+
+            return AuthenticationResponse(accessToken = accessToken)
+        }
+        else{
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+        }
+    }
 }
