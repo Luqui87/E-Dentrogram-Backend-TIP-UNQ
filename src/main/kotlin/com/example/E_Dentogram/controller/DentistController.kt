@@ -52,5 +52,11 @@ class DentistController {
         return ResponseEntity.status(HttpStatus.CREATED).body(token)
     }
 
+    @Operation(summary = "Add a Dentist though Google Account")
+    @PostMapping("/register/google")
+    fun signUpGoogle(@RequestBody token: String): ResponseEntity<AuthenticationResponse> {
+        val accessToken = service.signUpGoogle(token)
+        return ResponseEntity.status(HttpStatus.CREATED).body(accessToken)
+    }
 
 }
