@@ -39,6 +39,18 @@ services:
     networks:
       - app-network
 
+  whatsapp:
+    build:
+      context: ./whatsapp-service
+      dockerfile: Dockerfile
+    container_name: whatsapp_microservice
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./whatsapp-service:/usr/src/app
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge

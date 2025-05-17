@@ -38,3 +38,12 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### whatsapp-service ###
+!whatsapp-service/
+!whatsapp-service/Dockerfile
+!whatsapp-service/index.js
+!whatsapp-service/package.json
+!whatsapp-service/package-lock.json
+node_modules/
+.wwebjs_cache/
