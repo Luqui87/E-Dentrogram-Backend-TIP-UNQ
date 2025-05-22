@@ -11,6 +11,6 @@ class PatientDTO(
     val name: String,
     val address: String,
     val birthdate: LocalDate,
-    val telephone: Int,
+    val telephone: Long,
     val email: String
     ){}

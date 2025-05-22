@@ -25,7 +25,7 @@ class Patient(builder: PatientBuilder) {
     var birthdate: LocalDate? = builder.birthdate
 
     @Column
-    var telephone: Int? = builder.telephone
+    var telephone: Long? = builder.telephone
 
     @Column
     var email: String? = builder.email
@@ -50,7 +50,7 @@ class Patient(builder: PatientBuilder) {
             private set
         var birthdate: LocalDate? = null
             private set
-        var telephone: Int? = null
+        var telephone: Long? = null
             private set
         var email: String? = null
             private set
@@ -81,7 +81,7 @@ class Patient(builder: PatientBuilder) {
             this.birthdate = birthdate
         }
 
-        fun telephone(telephone: Int) = apply {
+        fun telephone(telephone: Long) = apply {
             require(isValidTelephone(telephone)) { "The telephone number is short." }
             this.telephone = telephone
         }
@@ -109,7 +109,7 @@ class Patient(builder: PatientBuilder) {
             return birthdate.isBefore(LocalDate.now())
         }
 
-        private fun isValidTelephone(telephone: Int): Boolean {
+        private fun isValidTelephone(telephone: Long): Boolean {
             return telephone.toString().length >= 8
         }
 
