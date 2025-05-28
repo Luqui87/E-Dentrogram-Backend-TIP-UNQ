@@ -100,7 +100,15 @@ class Tooth(builder: ToothBuilder) {
         }
     }
 
-
+    fun toList(): List<String>{
+        return listOf(
+            this.up.toString(),
+            this.right.toString(),
+            this.down.toString(),
+            this.left.toString(),
+            this.center.toString(),
+            this.special.toString())
+    }
 
 
 

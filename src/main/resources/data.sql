@@ -10,9 +10,3 @@ INSERT INTO patient_table (dentist_id,medical_record, dni, name, address, birthd
                         (2, 623, 405678912, 'Sofía Ramírez', 'Corrientes 333', '1999-07-18', 1176543289, 'sofia.ramirez@gmail.com'),
                         (2, 731, 428901234, 'Diego Torres', 'Belgrano 220', '1985-03-05', 1134567890, 'diego.torres@gmail.com')
 ON CONFLICT DO NOTHING;
-
-INSERT INTO tooth_table (patient_id, "number", "center", "down", "left", "right", "up",special) VALUES
-                        (215, 1, 'HEALTHY', 'HEALTHY', 'CARIES', 'HEALTHY', 'HEALTHY',0),
-                        (215, 2, 'CARIES', 'HEALTHY', 'CARIES', 'RESTORATION', 'HEALTHY',0),
-                        (215, 23, 'RESTORATION', 'HEALTHY', 'CARIES', 'RESTORATION', 'HEALTHY',0)
-ON CONFLICT DO NOTHING;
