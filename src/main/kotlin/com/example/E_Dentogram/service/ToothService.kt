@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Generated
 @Service
@@ -26,6 +27,9 @@ class ToothService {
 
     @Autowired
     lateinit var patientRecordRepository : PatientRecordRepository
+
+    @Autowired
+    lateinit var tokenService: TokenService
 
     @Transactional(readOnly=true)
     fun allTooth(): List<ToothDTO> {
@@ -45,13 +49,17 @@ class ToothService {
 
     }
 
-    fun updateTeeth(medicalRecord: Int, toothDTO: ToothDTO,dentistName:String): ToothDTO{
+    fun updateTeeth(medicalRecord: Int, toothDTO: ToothDTO, token:String): ToothDTO{
+
+        val username = tokenService.extractUsername(token.substringAfter("Bearer "))
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+
         val patient = patientRepository.findById(medicalRecord)
             .orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist") }
 
         val existingTooth = toothRepository.findByNumberAndPatientMedicalRecord(toothDTO.number, medicalRecord)
         val updatedTooth = updatedTooth(toothDTO,existingTooth,patient)
-        savePatientRecord(existingTooth,updatedTooth,patient,dentistName)
+        savePatientRecord(existingTooth,updatedTooth,patient,username)
 
         val savedTooth = toothRepository.save(updatedTooth)
 
@@ -93,7 +101,7 @@ class ToothService {
     private fun savePatientRecord(before: Tooth?,after: Tooth?,patient: Patient,dentistName:String) {
         if (isNotTheSameTooth(before,after)) {
             val record = PatientRecord.PatientRecordBuilder()
-                .date(LocalDate.now())
+                .date(LocalDateTime.now())
                 .tooth_number(after!!.number!!)
                 .before(toothList(before))
                 .after(toothList(after))

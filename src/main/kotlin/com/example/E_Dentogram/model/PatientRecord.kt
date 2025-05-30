@@ -2,6 +2,7 @@ package com.example.E_Dentogram.model
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -13,7 +14,7 @@ class PatientRecord(builder: PatientRecordBuilder) {
     var id: Long? = null
 
     @Column
-    var date : LocalDate? = builder.date
+    var date : LocalDateTime? = builder.date
 
     @Column
     var tooth_number: Int? = builder.tooth_number
@@ -38,7 +39,7 @@ class PatientRecord(builder: PatientRecordBuilder) {
 
 
     class PatientRecordBuilder {
-        var date: LocalDate? = null
+        var date: LocalDateTime? = null
             private set
         var tooth_number: Int? = null
             private set
@@ -52,7 +53,7 @@ class PatientRecord(builder: PatientRecordBuilder) {
             private set
 
 
-        fun date(date: LocalDate) = apply {
+        fun date(date: LocalDateTime) = apply {
             this.date = date
         }
 

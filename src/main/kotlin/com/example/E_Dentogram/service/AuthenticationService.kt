@@ -24,7 +24,6 @@ class AuthenticationService(
     private val userDetailService: CustomUserDetailService,
     private val tokenService: TokenService,
     private val jwtProperties: JwtProperties,
-    private val dentistRepository: DentistRepository
 ) {
     @Value("\${google.client.clientId}")
     private val clientId: String? = null

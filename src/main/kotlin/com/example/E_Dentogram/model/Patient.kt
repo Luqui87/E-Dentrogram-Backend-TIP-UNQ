@@ -34,6 +34,7 @@ class Patient(builder: PatientBuilder) {
     var teeth: MutableList<Tooth>? = builder.teeth
 
     @OneToMany(mappedBy = "patient", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     var historial: MutableList<PatientRecord>? = builder.historical
 
     @JsonIgnore

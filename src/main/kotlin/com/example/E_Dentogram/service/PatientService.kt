@@ -1,6 +1,7 @@
 package com.example.E_Dentogram.service
 
 import com.example.E_Dentogram.dto.PatientDTO
+import com.example.E_Dentogram.dto.PatientRecordDTO
 import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.model.PatientRecord
 import com.example.E_Dentogram.repository.PatientRecordRepository
@@ -83,10 +84,13 @@ class PatientService {
             email = patient.email!!) }
     }
 
-    fun getPatientRecords(patientMedicalRecord: Int, pageNumber:Int): List<PatientRecord> {
+    @Transactional
+    fun getPatientRecords(patientMedicalRecord: Int, pageNumber:Int): PatientRecordDTO {
         val pageRequest = PageRequest.of(pageNumber, 10, Sort.by(Sort.Direction.DESC, "date"))
         val page = patientRecordRepository.findByPatient_MedicalRecord(patientMedicalRecord, pageRequest)
-        return page.content
+
+        val patientRecordDTO = PatientRecordDTO(page.content,page.totalElements )
+        return patientRecordDTO
     }
 
 

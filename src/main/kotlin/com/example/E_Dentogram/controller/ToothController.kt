@@ -30,9 +30,9 @@ class ToothController{
     }
 
     @Operation(summary = "update teeth ")
-    @PutMapping("/update/tooth/{medicalRecord}/{dentistName}")
-    fun updateTeeth(@PathVariable medicalRecord: Int,@RequestBody toothDTO: ToothDTO,@PathVariable dentistName:String): ToothDTO {
-        val updatedTeeth = service.updateTeeth(medicalRecord,toothDTO,dentistName)
+    @PutMapping("/update/tooth/{medicalRecord}")
+    fun updateTeeth(@PathVariable medicalRecord: Int,@RequestBody toothDTO: ToothDTO,@RequestHeader("Authorization") token: String): ToothDTO {
+        val updatedTeeth = service.updateTeeth(medicalRecord,toothDTO,token)
         return updatedTeeth
     }
 
