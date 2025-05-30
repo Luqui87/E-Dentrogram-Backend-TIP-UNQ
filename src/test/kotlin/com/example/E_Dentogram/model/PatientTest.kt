@@ -124,6 +124,16 @@ class PatientTest {
     }
 
     @Test
+    fun `should create a patient with historial `() {
+        val record : MutableList<PatientRecord> = mock()
+        Mockito.`when`(record.size).thenReturn(10)
+
+        val patient = Patient.PatientBuilder().historial(record)
+
+        assertEquals(record, patient.historical)
+    }
+
+    @Test
     fun `should add patient if not already in the list`() {
         val oldDentist = mock<Dentist>()
         val newDentist = mock<Dentist>()

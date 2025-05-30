@@ -13,7 +13,6 @@ import jakarta.annotation.Generated
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -96,6 +95,7 @@ class DentistService(
                     .telephone(patientDTO.telephone)
                     .email(patientDTO.email)
                     .teeth(mutableListOf())
+                    .historial(mutableListOf())
                     .build()
             } catch (e: Exception) {
                 throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid data provided for register patient : ${e.message}", e)

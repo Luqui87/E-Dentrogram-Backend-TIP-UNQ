@@ -22,7 +22,7 @@ class ToothController{
         return ResponseEntity.ok(teeth)
     }
 
-    @Operation(summary = "Get all teeth for the patient wiht the medical record")
+    @Operation(summary = "Get all teeth for the patient with the medical record")
     @GetMapping("/tooth/{medicalRecord}")
     fun teeth(@PathVariable medicalRecord: Int): ResponseEntity<List<ToothDTO>> {
         val teeth = service.teeth(medicalRecord)
@@ -30,9 +30,9 @@ class ToothController{
     }
 
     @Operation(summary = "update teeth ")
-    @PutMapping("/update/tooth/{medicalRecord}")
-    fun updateTeeth(@PathVariable medicalRecord: Int,@RequestBody toothDTO: ToothDTO): ToothDTO {
-        val updatedTeeth = service.updateTeeth(medicalRecord,toothDTO)
+    @PutMapping("/update/tooth/{medicalRecord}/{dentistName}")
+    fun updateTeeth(@PathVariable medicalRecord: Int,@RequestBody toothDTO: ToothDTO,@PathVariable dentistName:String): ToothDTO {
+        val updatedTeeth = service.updateTeeth(medicalRecord,toothDTO,dentistName)
         return updatedTeeth
     }
 
