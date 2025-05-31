@@ -15,13 +15,13 @@ typealias ApplicationUser = com.example.E_Dentogram.model.Dentist
 class CustomUserDetailService(val DentistRepository: DentistRepository) : UserDetailsService {
 
     override fun loadUserByUsername(username: String): UserDetails =
-        DentistRepository.findByUsername(username)
+        DentistRepository.findByUsernameOrEmail(username, username)
             ?.mapToUserDetails()
             ?:throw UsernameNotFoundException("Not found")
 
     private fun ApplicationUser.mapToUserDetails(): UserDetails =
         User.builder()
-            .username(this.username)
+            .username(this.username )
             .password(this.password)
             .roles(this.role.name)
             .build()

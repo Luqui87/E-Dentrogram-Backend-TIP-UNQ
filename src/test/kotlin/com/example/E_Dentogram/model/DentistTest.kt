@@ -87,6 +87,30 @@ class DentistTest{
         Mockito.verify(patient, Mockito.never()).updateDentist(dentist)
     }
 
+    @Test
+    fun `should create a user with a valid email`() {
+        val user = Dentist.DentistBuilder().email("Marcos.dias@example.com")
+
+        assertNotNull(user)
+        assertEquals("Marcos.dias@example.com", user.email)
+    }
+
+    @Test
+    fun `should throw exception for email without a at sign `() {
+        val exception = org.junit.jupiter.api.assertThrows<IllegalArgumentException> {
+            Dentist.DentistBuilder().email("MARCOSDIASEXAMPLE.com")
+        }
+        assertEquals("The email format is not valid.", exception.message)
+    }
+
+    @Test
+    fun `should throw exception for email with space `() {
+        val exception = org.junit.jupiter.api.assertThrows<IllegalArgumentException> {
+            Dentist.DentistBuilder().email("MARCOS DIASEXAMPLE.COM")
+        }
+        assertEquals("The email format is not valid.", exception.message)
+    }
+
 
 
 

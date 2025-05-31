@@ -1,5 +1,6 @@
 package com.example.E_Dentogram.config
 
+import org.springframework.cglib.core.Customizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -16,7 +17,7 @@ import org.springframework.web.filter.CorsFilter
 @Configuration
 @EnableWebSecurity
 class SecurityConfiguration (
-    private val authenticationProvicer: AuthenticationProvider
+    private val authenticationProvider: AuthenticationProvider
 ){
     @Bean
     fun securityFilterChain(
@@ -31,7 +32,7 @@ class SecurityConfiguration (
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers( "/auth", "auth/refresh", "/error", "/h2-console/", "/h2-console/**", "/swagger-ui/**","/v3/api-docs/**")
                     .permitAll()
-                    .requestMatchers( "/register","/login")
+                    .requestMatchers( "/register","register/google","/login", "login/google")
                     .permitAll()
                     .requestMatchers("/dentist/**")
                     .authenticated()
@@ -45,7 +46,7 @@ class SecurityConfiguration (
             .sessionManagement{
                 it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
-            .authenticationProvider(authenticationProvicer)
+            .authenticationProvider(authenticationProvider)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .build()
 

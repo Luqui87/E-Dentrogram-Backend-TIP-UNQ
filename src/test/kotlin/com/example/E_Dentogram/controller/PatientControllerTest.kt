@@ -26,6 +26,9 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDate
+
+
+
 @Testcontainers
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -59,10 +62,11 @@ class PatientControllerTest {
         dentistRepository.deleteAll()
     }
 
-    private fun getTokenForUser(username: String, password: String): String {
+    private fun getTokenForUser(username: String, password: String,email:String): String {
         val registerDTO = mapOf(
             "username" to username,
-            "password" to password
+            "password" to password,
+            "email" to email
         )
 
         val result = mockMVC.perform(post("/register")
@@ -78,7 +82,7 @@ class PatientControllerTest {
 
     @Test
     fun `should get no patients`() {
-        val token = getTokenForUser("dentist1", "password1")
+        val token = getTokenForUser("dentist1", "password1","User1@gmail.com")
 
         mockMVC.perform(
             get("/allPatients").header("Authorization", "Bearer $token")
@@ -90,13 +94,14 @@ class PatientControllerTest {
 
     @Test
     fun shouldGetOnePatient() {
-        val token = getTokenForUser("dentist1", "password1")
+        val token = getTokenForUser("dentist1", "password1","User1@gmail.com")
 
         var dentist = dentistRepository.findByUsername("dentist2")
         if (dentist == null) {
             dentist = Dentist.DentistBuilder()
                 .username("dentist2")
                 .password("password2")
+                .email("User2@gmail.com")
                 .patients(mutableListOf())
                 .build()
             dentistRepository.save(dentist)
@@ -126,7 +131,7 @@ class PatientControllerTest {
 
     @Test
     fun `should not get specific patient`() {
-        val token = getTokenForUser("dentist1", "password1")
+        val token = getTokenForUser("dentist1", "password1","User1@gmail.com")
 
         mockMVC.perform(
             get("/patient/123").header("Authorization", "Bearer $token")
@@ -138,7 +143,7 @@ class PatientControllerTest {
 
     @Test
     fun `should get the specific patient`() {
-        val token = getTokenForUser("dentist1", "password1")
+        val token = getTokenForUser("dentist1", "password1","User1@gmail.com")
 
         var dentist = dentistRepository.findByUsername("dentist1")
         if (dentist == null) {
@@ -181,7 +186,7 @@ class PatientControllerTest {
 
     @Test
     fun `should get one simple patient`() {
-        val token = getTokenForUser("dentist1", "password1")
+        val token = getTokenForUser("dentist1", "password1","User1@gmail.com")
 
         var dentist = dentistRepository.findByUsername("dentist1")
         if (dentist == null) {
@@ -219,6 +224,41 @@ class PatientControllerTest {
             .andExpect(jsonPath("$[0].birthdate").value("2000-10-12"))
             .andExpect(jsonPath("$[0].telephone").value(1153276406))
             .andExpect(jsonPath("$[0].email").value("lucas@mail.com"))
+    }
+
+    @Test
+    fun `should  get Patient Records`() {
+        val token = getTokenForUser("dentist1", "password1","User1@gmail.com")
+
+        var dentist = dentistRepository.findByUsername("dentist1")
+        if (dentist == null) {
+            dentist = Dentist.DentistBuilder()
+                .username("dentist2")
+                .password("password2")
+                .patients(mutableListOf())
+                .build()
+            dentistRepository.save(dentist)
+        }
+
+        val patient = Patient.PatientBuilder()
+            .medicalRecord(123)
+            .dni(42421645)
+            .name("Lucas Alvarez")
+            .address("Bragado 1413")
+            .birthdate(LocalDate.of(2000, 10, 12))
+            .telephone(1153276406)
+            .email("lucas@mail.com")
+            .dentist(dentist)
+            .build()
+
+        patientRepository.save(patient)
+
+        mockMVC.perform(
+            get("/patient/records/123/0").header("Authorization", "Bearer $token")
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.records", IsCollectionWithSize.hasSize<Array<Any>>(0)))
     }
 
     @Nested

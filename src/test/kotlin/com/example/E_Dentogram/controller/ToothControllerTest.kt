@@ -56,7 +56,8 @@ class ToothControllerTest {
     private fun getAccessToken(): String {
         val registerDTO = mapOf(
             "username" to "User2",
-            "password" to "password2"
+            "password" to "password2",
+            "email" to "User2@gmail.com"
         )
 
         val result = mockMvc.perform(post("/register")
@@ -74,6 +75,7 @@ class ToothControllerTest {
         val dentist = Dentist.DentistBuilder()
             .username("User1")
             .password("password1")
+            .email("User1@gmail.com")
             .patients(mutableListOf())
             .build()
 

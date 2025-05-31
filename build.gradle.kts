@@ -39,6 +39,8 @@ dependencies {
 	implementation ("org.postgresql:postgresql:42.2.24")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
 
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
+
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:postgresql")
 
@@ -52,6 +54,11 @@ dependencies {
 	implementation("io.jsonwebtoken:jjwt-jackson:0.12.3")
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	testImplementation("org.springframework.security:spring-security-test")
+
+	implementation("com.google.api-client:google-api-client:2.3.0")
+	runtimeOnly("com.google.oauth-client:google-oauth-client-jetty:1.34.1")
+	implementation("com.google.apis:google-api-services-calendar:v3-rev411-1.25.0")
+	implementation("com.google.auth:google-auth-library-oauth2-http:1.17.0")
 }
 
 kotlin {

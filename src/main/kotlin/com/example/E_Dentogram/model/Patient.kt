@@ -25,13 +25,17 @@ class Patient(builder: PatientBuilder) {
     var birthdate: LocalDate? = builder.birthdate
 
     @Column
-    var telephone: Int? = builder.telephone
+    var telephone: Long? = builder.telephone
 
     @Column
     var email: String? = builder.email
 
     @OneToMany(mappedBy = "patient", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     var teeth: MutableList<Tooth>? = builder.teeth
+
+    @OneToMany(mappedBy = "patient", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
+    var historial: MutableList<PatientRecord>? = builder.historical
 
     @JsonIgnore
     @ManyToOne
@@ -50,11 +54,13 @@ class Patient(builder: PatientBuilder) {
             private set
         var birthdate: LocalDate? = null
             private set
-        var telephone: Int? = null
+        var telephone: Long? = null
             private set
         var email: String? = null
             private set
         var teeth: MutableList<Tooth>? = null
+            private set
+        var historical: MutableList<PatientRecord>? = null
             private set
         var dentist: Dentist? = null
             private set
@@ -81,7 +87,7 @@ class Patient(builder: PatientBuilder) {
             this.birthdate = birthdate
         }
 
-        fun telephone(telephone: Int) = apply {
+        fun telephone(telephone: Long) = apply {
             require(isValidTelephone(telephone)) { "The telephone number is short." }
             this.telephone = telephone
         }
@@ -96,6 +102,11 @@ class Patient(builder: PatientBuilder) {
             this.teeth = teeth
         }
 
+        fun historial(historial: MutableList<PatientRecord>) = apply {
+            this.historical = historial
+        }
+
+
         fun dentist(dentist: Dentist) = apply {
             this.dentist = dentist
         }
@@ -109,7 +120,7 @@ class Patient(builder: PatientBuilder) {
             return birthdate.isBefore(LocalDate.now())
         }
 
-        private fun isValidTelephone(telephone: Int): Boolean {
+        private fun isValidTelephone(telephone: Long): Boolean {
             return telephone.toString().length >= 8
         }
 

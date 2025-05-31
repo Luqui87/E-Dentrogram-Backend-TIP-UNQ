@@ -57,7 +57,8 @@ class DentistControllerTest{
     private fun getToken(): String {
         val registerDTO = mapOf(
             "username" to "User2000",
-            "password" to "password2000"
+            "password" to "password2000",
+            "email" to "User2000@gmail.com"
         )
 
         val result = mockMVC.perform(post("/register")
@@ -73,7 +74,8 @@ class DentistControllerTest{
     private fun getTokenForUser(dentist: Dentist): String {
         val registerDTO = mapOf(
             "username" to dentist.username,
-            "password" to dentist.password
+            "password" to dentist.password,
+            "email" to dentist.email
         )
 
         val result = mockMVC.perform(post("/register")
@@ -106,27 +108,13 @@ class DentistControllerTest{
             .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(1)))
     }
 
-    /* VER
-    @Test
-    fun `should not get specific dentist`(){
-
-        val accessToken = this.getToken()
-
-        mockMVC.perform(get("/dentist/123")
-                .header("Authorization", "Bearer $accessToken")
-        )
-            .andDo(MockMvcResultHandlers.print())
-            .andExpect(status().isNotFound) // mirar el orden en el service
-            .andExpect(status().reason("This dentist does not exist"))
-    }
-    */
-
     @Test
     fun `should get dentist with the username`(){
 
         val dentist = Dentist.DentistBuilder()
             .username("User1")
             .password("password1")
+            .email("User1@gmail.com")
             .patients(mutableListOf())
             .build()
 
@@ -151,12 +139,14 @@ class DentistControllerTest{
         val dentist = Dentist.DentistBuilder()
             .username("User1")
             .password("password1")
+            .email("User1@gmail.com")
             .patients(mutableListOf())
             .build()
 
         val otherDentist = Dentist.DentistBuilder()
             .username("User2")
             .password("password2")
+            .email("User2@gmail.com")
             .patients(mutableListOf())
             .build()
 
@@ -207,6 +197,7 @@ class DentistControllerTest{
         val dentist = Dentist.DentistBuilder()
             .username("User1")
             .password("password1")
+            .email("User1@gmail.com")
             .patients(mutableListOf())
             .build()
 
@@ -243,6 +234,7 @@ class DentistControllerTest{
         val dentist = Dentist.DentistBuilder()
             .username("User1")
             .password("password1")
+            .email("User1@gmail.com")
             .patients(mutableListOf())
             .build()
 
@@ -274,12 +266,14 @@ class DentistControllerTest{
         val dentist = Dentist.DentistBuilder()
             .username("User1")
             .password("password1")
+            .email("User1@gmail.com")
             .patients(mutableListOf())
             .build()
 
         val otherDentist = Dentist.DentistBuilder()
             .username("User2")
             .password("password2")
+            .email("User2@gmail.com")
             .patients(mutableListOf())
             .build()
 
