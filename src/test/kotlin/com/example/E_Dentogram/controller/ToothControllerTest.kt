@@ -152,7 +152,7 @@ class ToothControllerTest {
     fun `should not update when no body is present`() {
         val token = this.getAccessToken()
 
-        mockMvc.perform(put("/update/tooth/123/Roberto Diaz")
+        mockMvc.perform(put("/update/tooth/123")
             .header("Authorization", "Bearer $token"))
             .andExpect(status().isBadRequest)
     }
@@ -173,7 +173,7 @@ class ToothControllerTest {
                 "special" to "NOTHING"
             )
 
-        mockMvc.perform(put("/update/tooth/123/Roberto Diaz")
+        mockMvc.perform(put("/update/tooth/123")
             .header("Authorization", "Bearer $token")
             .contentType(MediaType.APPLICATION_JSON)
             .content(jacksonObjectMapper().writeValueAsString(body)))
@@ -197,7 +197,7 @@ class ToothControllerTest {
                 "special" to "NOTHING"
             )
 
-        mockMvc.perform(put("/update/tooth/123/Roberto Diaz")
+        mockMvc.perform(put("/update/tooth/123")
             .header("Authorization", "Bearer $token")
             .contentType(MediaType.APPLICATION_JSON)
             .content(jacksonObjectMapper().writeValueAsString(body)))

@@ -258,7 +258,7 @@ class PatientControllerTest {
         )
             .andDo(print())
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(0)))
+            .andExpect(jsonPath("$.records", IsCollectionWithSize.hasSize<Array<Any>>(0)))
     }
 
     @Nested

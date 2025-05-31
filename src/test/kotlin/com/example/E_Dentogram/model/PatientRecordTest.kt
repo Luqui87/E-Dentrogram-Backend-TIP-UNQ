@@ -2,16 +2,17 @@ package com.example.E_Dentogram.model
 
 import org.junit.jupiter.api.Assertions.*
 import org.mockito.Mockito.mock
-import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.test.Test
 
 class PatientRecordTest{
 
     @Test
     fun `should create a dentist with a valid date`() {
-        val record = PatientRecord.PatientRecordBuilder().date(LocalDate.now())
+        val date = LocalDateTime.now()
+        val record = PatientRecord.PatientRecordBuilder().date(date)
 
-        assertEquals(LocalDate.now(), record.date)
+        assertEquals(date, record.date)
     }
 
     @Test
