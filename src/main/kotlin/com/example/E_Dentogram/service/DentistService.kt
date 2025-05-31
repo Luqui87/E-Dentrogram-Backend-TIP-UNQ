@@ -1,10 +1,7 @@
 package com.example.E_Dentogram.service
 
 import com.example.E_Dentogram.config.JwtProperties
-import com.example.E_Dentogram.dto.AuthenticationResponse
-import com.example.E_Dentogram.dto.DentistDTO
-import com.example.E_Dentogram.dto.DentistSimpleDTO
-import com.example.E_Dentogram.dto.PatientDTO
+import com.example.E_Dentogram.dto.*
 import com.example.E_Dentogram.model.Dentist
 import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.repository.DentistRepository
@@ -16,7 +13,6 @@ import jakarta.annotation.Generated
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -99,6 +95,7 @@ class DentistService(
                     .telephone(patientDTO.telephone)
                     .email(patientDTO.email)
                     .teeth(mutableListOf())
+                    .historial(mutableListOf())
                     .build()
             } catch (e: Exception) {
                 throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid data provided for register patient : ${e.message}", e)
@@ -140,9 +137,8 @@ class DentistService(
         return AuthenticationResponse(accessToken = token)
     }
 
-    fun signUpGoogle(token: String): AuthenticationResponse? {
+    fun signUpGoogle(googleTokenDTO: GoogleTokenDTO): AuthenticationResponse? {
 
-        val idTokenString = token.replace("\"", "")
 
         val transport = NetHttpTransport()
         val jsonFactory = GsonFactory.getDefaultInstance()
@@ -151,7 +147,7 @@ class DentistService(
             .setAudience(Collections.singletonList(clientId))
             .build()
 
-        val idToken = verifier.verify(idTokenString)
+        val idToken = verifier.verify(googleTokenDTO.token)
         if (idToken != null) {
             val payload = idToken.payload
             val email = payload.email

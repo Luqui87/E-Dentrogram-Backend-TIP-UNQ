@@ -33,6 +33,10 @@ class Patient(builder: PatientBuilder) {
     @OneToMany(mappedBy = "patient", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     var teeth: MutableList<Tooth>? = builder.teeth
 
+    @OneToMany(mappedBy = "patient", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
+    var historial: MutableList<PatientRecord>? = builder.historical
+
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "dentist_id", nullable = false)
@@ -55,6 +59,8 @@ class Patient(builder: PatientBuilder) {
         var email: String? = null
             private set
         var teeth: MutableList<Tooth>? = null
+            private set
+        var historical: MutableList<PatientRecord>? = null
             private set
         var dentist: Dentist? = null
             private set
@@ -95,6 +101,11 @@ class Patient(builder: PatientBuilder) {
             require(isValidTeeth(teeth)) { "The amount of teeth is not valid." }
             this.teeth = teeth
         }
+
+        fun historial(historial: MutableList<PatientRecord>) = apply {
+            this.historical = historial
+        }
+
 
         fun dentist(dentist: Dentist) = apply {
             this.dentist = dentist

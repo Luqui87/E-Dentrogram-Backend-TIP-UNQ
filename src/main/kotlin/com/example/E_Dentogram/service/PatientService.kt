@@ -1,10 +1,15 @@
 package com.example.E_Dentogram.service
 
 import com.example.E_Dentogram.dto.PatientDTO
+import com.example.E_Dentogram.dto.PatientRecordDTO
 import com.example.E_Dentogram.model.Patient
+import com.example.E_Dentogram.model.PatientRecord
+import com.example.E_Dentogram.repository.PatientRecordRepository
 import com.example.E_Dentogram.repository.PatientRepository
 import jakarta.annotation.Generated
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -17,6 +22,9 @@ class PatientService {
 
     @Autowired
     lateinit var patientRepository : PatientRepository
+
+    @Autowired
+    lateinit var patientRecordRepository : PatientRecordRepository
 
     @Transactional(readOnly=true)
     fun allPatients(): List<Patient>? {
@@ -75,4 +83,15 @@ class PatientService {
             telephone = patient.telephone!!,
             email = patient.email!!) }
     }
+
+    @Transactional
+    fun getPatientRecords(patientMedicalRecord: Int, pageNumber:Int): PatientRecordDTO {
+        val pageRequest = PageRequest.of(pageNumber, 10, Sort.by(Sort.Direction.DESC, "date"))
+        val page = patientRecordRepository.findByPatient_MedicalRecord(patientMedicalRecord, pageRequest)
+
+        val patientRecordDTO = PatientRecordDTO(page.content,page.totalElements )
+        return patientRecordDTO
+    }
+
+
 }

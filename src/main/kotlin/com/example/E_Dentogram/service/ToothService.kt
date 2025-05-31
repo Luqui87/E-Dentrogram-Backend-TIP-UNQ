@@ -1,10 +1,8 @@
 package com.example.E_Dentogram.service
 
 import com.example.E_Dentogram.dto.ToothDTO
-import com.example.E_Dentogram.model.SpecialToothState
-import com.example.E_Dentogram.model.Tooth
-import com.example.E_Dentogram.model.ToothState
-import com.example.E_Dentogram.model.ToothStateParser
+import com.example.E_Dentogram.model.*
+import com.example.E_Dentogram.repository.PatientRecordRepository
 import com.example.E_Dentogram.repository.PatientRepository
 import com.example.E_Dentogram.repository.ToothRepository
 import jakarta.annotation.Generated
@@ -13,6 +11,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Generated
 @Service
@@ -24,6 +24,12 @@ class ToothService {
 
     @Autowired
     lateinit var patientRepository : PatientRepository
+
+    @Autowired
+    lateinit var patientRecordRepository : PatientRecordRepository
+
+    @Autowired
+    lateinit var tokenService: TokenService
 
     @Transactional(readOnly=true)
     fun allTooth(): List<ToothDTO> {
@@ -43,12 +49,24 @@ class ToothService {
 
     }
 
-    fun updateTeeth(medicalRecord: Int, toothDTO: ToothDTO): ToothDTO{
+    fun updateTeeth(medicalRecord: Int, toothDTO: ToothDTO, token:String): ToothDTO{
+
+        val username = tokenService.extractUsername(token.substringAfter("Bearer "))
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+
         val patient = patientRepository.findById(medicalRecord)
             .orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist") }
 
         val existingTooth = toothRepository.findByNumberAndPatientMedicalRecord(toothDTO.number, medicalRecord)
+        val updatedTooth = updatedTooth(toothDTO,existingTooth,patient)
+        savePatientRecord(existingTooth,updatedTooth,patient,username)
 
+        val savedTooth = toothRepository.save(updatedTooth)
+
+        return ToothDTO.fromModel(savedTooth)
+    }
+
+    private fun updatedTooth(toothDTO: ToothDTO,existingTooth: Tooth?,patient: Patient): Tooth {
         val updatedTooth = try {
             val up = combineStates(existingTooth?.up, ToothStateParser.stringToState(toothDTO.up))
             val right = combineStates(existingTooth?.right, ToothStateParser.stringToState(toothDTO.right))
@@ -69,10 +87,7 @@ class ToothService {
         } catch (e: Exception) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid data provided for teeth update", e)
         }
-
-        val savedTooth = toothRepository.save(updatedTooth)
-
-        return ToothDTO.fromModel(savedTooth)
+        return updatedTooth
     }
 
     private fun combineStates(oldState: ToothState?, newState: ToothState): ToothState {
@@ -81,6 +96,34 @@ class ToothService {
         } else {
             oldState.combineWith(newState)
         }
+    }
+
+    private fun savePatientRecord(before: Tooth?,after: Tooth?,patient: Patient,dentistName:String) {
+        if (isNotTheSameTooth(before,after)) {
+            val record = PatientRecord.PatientRecordBuilder()
+                .date(LocalDateTime.now())
+                .tooth_number(after!!.number!!)
+                .before(toothList(before))
+                .after(toothList(after))
+                .dentistName(dentistName)
+                .patient(patient)
+                .build()
+            patientRecordRepository.save(record)
+        }
+    }
+
+    private fun isNotTheSameTooth(before: Tooth?,after: Tooth?) : Boolean{
+        return  ( before == null && after != null) ||
+                before!!.up != after!!.up ||
+                before.right != after.right ||
+                before.down != after.down ||
+                before.left != after.left ||
+                before.center != after.center ||
+                before.special != after.special
+    }
+
+    private fun toothList(tooth : Tooth?):List<String>{
+        return tooth?.toList() ?: listOf("HEALTHFUL","HEALTHFUL","HEALTHFUL","HEALTHFUL","HEALTHFUL","NOTHING")
     }
 
 }

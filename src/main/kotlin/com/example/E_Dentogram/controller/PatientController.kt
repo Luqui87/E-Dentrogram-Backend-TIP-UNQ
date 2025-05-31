@@ -2,7 +2,9 @@ package com.example.E_Dentogram.controller
 
 
 import com.example.E_Dentogram.dto.PatientDTO
+import com.example.E_Dentogram.dto.PatientRecordDTO
 import com.example.E_Dentogram.model.Patient
+import com.example.E_Dentogram.model.PatientRecord
 import com.example.E_Dentogram.service.PatientService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,6 +38,13 @@ class PatientController {
     fun getPatient(@PathVariable patientMedicalRecord: Int): ResponseEntity<Patient> {
         val patient = service.getPatient(patientMedicalRecord)
         return ResponseEntity.ok(patient)
+    }
+
+    @Operation(summary = "The patient with the medical record")
+    @GetMapping("/patient/records/{patientMedicalRecord}/{pageNumber}")
+    fun getPatientRecords(@PathVariable patientMedicalRecord: Int,@PathVariable pageNumber:Int): ResponseEntity<PatientRecordDTO> {
+        val patientRecord = service.getPatientRecords(patientMedicalRecord,pageNumber)
+        return ResponseEntity.ok(patientRecord)
     }
 
 

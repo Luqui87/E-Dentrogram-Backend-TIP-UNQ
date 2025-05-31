@@ -108,21 +108,6 @@ class DentistControllerTest{
             .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(1)))
     }
 
-    /* VER
-    @Test
-    fun `should not get specific dentist`(){
-
-        val accessToken = this.getToken()
-
-        mockMVC.perform(get("/dentist/123")
-                .header("Authorization", "Bearer $accessToken")
-        )
-            .andDo(MockMvcResultHandlers.print())
-            .andExpect(status().isNotFound) // mirar el orden en el service
-            .andExpect(status().reason("This dentist does not exist"))
-    }
-    */
-
     @Test
     fun `should get dentist with the username`(){
 
