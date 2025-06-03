@@ -57,6 +57,7 @@ class DentistControllerTest{
     private fun getToken(): String {
         val registerDTO = mapOf(
             "username" to "User2000",
+            "name" to "User2000_name",
             "password" to "password2000",
             "email" to "User2000@gmail.com"
         )
@@ -74,10 +75,10 @@ class DentistControllerTest{
     private fun getTokenForUser(dentist: Dentist): String {
         val registerDTO = mapOf(
             "username" to dentist.username,
+            "name" to dentist.name,
             "password" to dentist.password,
             "email" to dentist.email
         )
-
         val result = mockMVC.perform(post("/register")
             .contentType(MediaType.APPLICATION_JSON)
             .content(jacksonObjectMapper().writeValueAsString(registerDTO)))
@@ -113,6 +114,7 @@ class DentistControllerTest{
 
         val dentist = Dentist.DentistBuilder()
             .username("User1")
+            .name("User1_name")
             .password("password1")
             .email("User1@gmail.com")
             .patients(mutableListOf())
@@ -129,6 +131,7 @@ class DentistControllerTest{
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.dentistID").value(registeredDentist.id))
             .andExpect(jsonPath("$.username").value("User1"))
+            .andExpect(jsonPath("$.name").value("User1_name"))
             .andExpect(jsonPath("$.patients", IsCollectionWithSize.hasSize<Array<Any>>(0)))
     }
 
@@ -138,6 +141,7 @@ class DentistControllerTest{
     fun `should add patient to the dentist`(){
         val dentist = Dentist.DentistBuilder()
             .username("User1")
+            .name("User1_name")
             .password("password1")
             .email("User1@gmail.com")
             .patients(mutableListOf())
@@ -145,6 +149,7 @@ class DentistControllerTest{
 
         val otherDentist = Dentist.DentistBuilder()
             .username("User2")
+            .name("User2_name")
             .password("password2")
             .email("User2@gmail.com")
             .patients(mutableListOf())
@@ -189,6 +194,7 @@ class DentistControllerTest{
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.dentistID").value(registeredDentist.id))
             .andExpect(jsonPath("$.username").value("User1"))
+            .andExpect(jsonPath("$.name").value("User1_name"))
             .andExpect(jsonPath("$.patients", IsCollectionWithSize.hasSize<Array<Any>>(1)))
     }
 
@@ -196,6 +202,7 @@ class DentistControllerTest{
     fun `should create and add patient to the dentist`(){
         val dentist = Dentist.DentistBuilder()
             .username("User1")
+            .name("User1_name")
             .password("password1")
             .email("User1@gmail.com")
             .patients(mutableListOf())
@@ -224,6 +231,7 @@ class DentistControllerTest{
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.dentistID").value(registeredDentist.id))
             .andExpect(jsonPath("$.username").value("User1"))
+            .andExpect(jsonPath("$.name").value("User1_name"))
             .andExpect(jsonPath("$.patients", IsCollectionWithSize.hasSize<Array<Any>>(1)))
     }
 
@@ -233,6 +241,7 @@ class DentistControllerTest{
 
         val dentist = Dentist.DentistBuilder()
             .username("User1")
+            .name("User1_name")
             .password("password1")
             .email("User1@gmail.com")
             .patients(mutableListOf())
@@ -265,6 +274,7 @@ class DentistControllerTest{
     fun `should try remove patient to the dentist without the patient and do nothing`(){
         val dentist = Dentist.DentistBuilder()
             .username("User1")
+            .name("User1_name")
             .password("password1")
             .email("User1@gmail.com")
             .patients(mutableListOf())
@@ -272,6 +282,7 @@ class DentistControllerTest{
 
         val otherDentist = Dentist.DentistBuilder()
             .username("User2")
+            .name("User2_name")
             .password("password2")
             .email("User2@gmail.com")
             .patients(mutableListOf())

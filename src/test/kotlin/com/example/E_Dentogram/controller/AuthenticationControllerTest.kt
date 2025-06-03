@@ -20,7 +20,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
-import java.util.*
 
 @Testcontainers
 @AutoConfigureMockMvc
@@ -55,9 +54,8 @@ class AuthenticationControllerTest {
             "token" to "invalid-token"
         )
 
-        // The fix is here: explicitly cast null to GoogleIdToken?
         `when`(googleIdTokenVerifier.verify(anyString()))
-            .thenReturn(null as GoogleIdToken?) // <--- Tell Kotlin the type of null being returned
+            .thenReturn(null as GoogleIdToken?)
 
         mockMvc.perform(post("/login/google")
             .contentType(MediaType.APPLICATION_JSON)
