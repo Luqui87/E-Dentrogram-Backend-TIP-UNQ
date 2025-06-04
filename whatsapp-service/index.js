@@ -6,19 +6,25 @@ const app = express();
 
 app.use(express.json());
 
+let lastQR = null;
+let isReady = false;
+
 const client = new Client({
     puppeteer: {
-        executablePath: puppeteer.executablePath(), // <- forzamos uso del Chromium de puppeteer
+        executablePath: puppeteer.executablePath(),
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     }
 });
 
 client.on('qr', (qr) => {
+    lastQR = qr;
+    isReady = false;
     qrcode.generate(qr, { small: true });
 });
 
 client.on('ready', () => {
     console.log('✅ WhatsApp client is ready!');
+    isReady = true;
 });
 
 client.initialize();
@@ -32,6 +38,16 @@ app.post('/send', async (req, res) => {
         res.status(200).send({ status: 'Mensaje enviado' });
     } catch (error) {
         res.status(500).send({ error: error.message });
+    }
+});
+
+app.get('/qr', (req, res) => {
+    if (isReady) {
+        res.status(404).send({ error: 'Cliente listo, QR no disponible' });
+    } else if (lastQR) {
+        res.status(200).send({ qr: lastQR });
+    } else {
+        res.status(404).send({ error: 'QR no disponible' });
     }
 });
 
