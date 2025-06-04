@@ -15,6 +15,9 @@ class Dentist(builder: DentistBuilder) {
     var username: String? = builder.username
 
     @Column
+    var name: String? = builder.name
+
+    @Column
     var password: String? = builder.password
 
     @Column(unique = true, nullable = false)
@@ -28,6 +31,8 @@ class Dentist(builder: DentistBuilder) {
     class DentistBuilder {
         var username: String? = null
             private set
+        var name: String? = null
+            private set
         var password: String? = null
             private set
         var email: String? = null
@@ -37,6 +42,10 @@ class Dentist(builder: DentistBuilder) {
 
         fun username(username: String) = apply {
             this.username = username
+        }
+
+        fun name(name: String) = apply {
+            this.name = name
         }
 
         fun password(password: String) = apply {

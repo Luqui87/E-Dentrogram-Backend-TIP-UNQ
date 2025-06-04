@@ -56,6 +56,7 @@ class ToothControllerTest {
     private fun getAccessToken(): String {
         val registerDTO = mapOf(
             "username" to "User2",
+            "name" to "User2_name",
             "password" to "password2",
             "email" to "User2@gmail.com"
         )
@@ -74,6 +75,7 @@ class ToothControllerTest {
     fun createPatient(): Patient {
         val dentist = Dentist.DentistBuilder()
             .username("User1")
+            .name("User1_name")
             .password("password1")
             .email("User1@gmail.com")
             .patients(mutableListOf())

@@ -2,6 +2,7 @@ package com.example.E_Dentogram.service
 
 import com.example.E_Dentogram.dto.ToothDTO
 import com.example.E_Dentogram.model.*
+import com.example.E_Dentogram.repository.DentistRepository
 import com.example.E_Dentogram.repository.PatientRecordRepository
 import com.example.E_Dentogram.repository.PatientRepository
 import com.example.E_Dentogram.repository.ToothRepository
@@ -11,13 +12,16 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Generated
 @Service
 @Transactional
 class ToothService {
+
+
+    @Autowired
+    lateinit var dentistRepository : DentistRepository
 
     @Autowired
     lateinit var toothRepository : ToothRepository
@@ -54,12 +58,15 @@ class ToothService {
         val username = tokenService.extractUsername(token.substringAfter("Bearer "))
             ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
 
+        val dentist = dentistRepository.findByUsername(username)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist")
+
         val patient = patientRepository.findById(medicalRecord)
             .orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist") }
 
         val existingTooth = toothRepository.findByNumberAndPatientMedicalRecord(toothDTO.number, medicalRecord)
         val updatedTooth = updatedTooth(toothDTO,existingTooth,patient)
-        savePatientRecord(existingTooth,updatedTooth,patient,username)
+        savePatientRecord(existingTooth,updatedTooth,patient,dentist.name!!)
 
         val savedTooth = toothRepository.save(updatedTooth)
 
