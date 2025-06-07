@@ -11,6 +11,16 @@ class ToothDTO(
     val center: String,
     val special: String
 ) {
+    constructor(number: Int, states: List<String>): this(
+        number = number,
+        up = states[0],
+        right = states[1],
+        down = states[2],
+        left = states[3],
+        center = states[4],
+        special = states[5]
+    )
+
     companion object{
     fun fromModel(tooth:Tooth): ToothDTO{
         return ToothDTO(

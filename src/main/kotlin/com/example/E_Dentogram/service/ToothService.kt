@@ -12,7 +12,10 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
+import java.sql.Timestamp
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 @Generated
 @Service
@@ -132,5 +135,21 @@ class ToothService {
     private fun toothList(tooth : Tooth?):List<String>{
         return tooth?.toList() ?: listOf("HEALTHFUL","HEALTHFUL","HEALTHFUL","HEALTHFUL","HEALTHFUL","NOTHING")
     }
+
+    fun teethAt(date: LocalDate, medicalRecord: Int): List<ToothDTO>? {
+        if (patientRepository.existsById(medicalRecord)) {
+
+            println(date)
+
+            val timestamp = Timestamp.valueOf(date.atTime(LocalTime.MAX))
+
+            val records = patientRecordRepository.findLatestToothRecordsUpToDate(medicalRecord, timestamp )
+            return records.map { record -> ToothDTO(record.tooth_number!!, record.after!!) }
+        }
+        else {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist")
+        }
+
+   }
 
 }
