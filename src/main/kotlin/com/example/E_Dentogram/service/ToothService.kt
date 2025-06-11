@@ -136,12 +136,10 @@ class ToothService {
         return tooth?.toList() ?: listOf("HEALTHFUL","HEALTHFUL","HEALTHFUL","HEALTHFUL","HEALTHFUL","NOTHING")
     }
 
-    fun teethAt(date: LocalDate, medicalRecord: Int): List<ToothDTO>? {
+    fun teethAt(date: LocalDateTime, medicalRecord: Int): List<ToothDTO>? {
         if (patientRepository.existsById(medicalRecord)) {
 
-            println(date)
-
-            val timestamp = Timestamp.valueOf(date.atTime(LocalTime.MAX))
+            val timestamp = Timestamp.valueOf(date)
 
             val records = patientRecordRepository.findLatestToothRecordsUpToDate(medicalRecord, timestamp )
             return records.map { record -> ToothDTO(record.tooth_number!!, record.after!!) }

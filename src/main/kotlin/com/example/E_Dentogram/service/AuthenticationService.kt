@@ -24,9 +24,9 @@ class AuthenticationService(
     private val userDetailService: CustomUserDetailService,
     private val tokenService: TokenService,
     private val jwtProperties: JwtProperties,
+    private val googleIdTokenVerifier: GoogleIdTokenVerifier,
 ) {
-    @Value("\${google.client.clientId}")
-    private val clientId: String? = null
+
 
     fun authentication(authRequest: AuthenticationRequest): AuthenticationResponse {
         authManager.authenticate(
@@ -49,16 +49,8 @@ class AuthenticationService(
 
     fun authenticationGoogle(googleToken: GoogleTokenDTO): AuthenticationResponse {
 
-
-        val transport = NetHttpTransport()
-        val jsonFactory = GsonFactory.getDefaultInstance()
-
-        val verifier = GoogleIdTokenVerifier.Builder(transport, jsonFactory)
-            .setAudience(Collections.singletonList(clientId))
-            .build()
-
         return try {
-            val idToken = verifier.verify(googleToken.token)
+            val idToken = googleIdTokenVerifier.verify(googleToken.token)
             if (idToken != null){
                 val payload = idToken.payload
                 val email = payload.email
@@ -76,6 +68,7 @@ class AuthenticationService(
             }
         }
         catch (e: Exception){
+            println(e)
             throw  ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token")
         }
 
