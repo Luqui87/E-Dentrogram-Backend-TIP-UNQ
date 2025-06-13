@@ -26,6 +26,7 @@ class DentistService(
     private val userDetailService: CustomUserDetailService,
     private val tokenService: TokenService,
     private val jwtProperties: JwtProperties,
+    private val googleIdTokenVerifier: GoogleIdTokenVerifier
 ) {
 
     @Autowired
@@ -48,6 +49,7 @@ class DentistService(
             dentist -> DentistSimpleDTO(
                 username = dentist.username!!,
                 password = dentist.password!!,
+                name = dentist.name!!,
                 email = dentist.email!!)
         }
         return dentistDTOs
@@ -122,6 +124,7 @@ class DentistService(
 
         val dentist = Dentist.DentistBuilder()
             .username(dentistDTO.username)
+            .name(dentistDTO.name)
             .password(encoder.encode(dentistDTO.password))
             .email(dentistDTO.email)
             .build()
@@ -139,18 +142,11 @@ class DentistService(
 
     fun signUpGoogle(googleTokenDTO: GoogleTokenDTO): AuthenticationResponse? {
 
-
-        val transport = NetHttpTransport()
-        val jsonFactory = GsonFactory.getDefaultInstance()
-
-        val verifier = GoogleIdTokenVerifier.Builder(transport, jsonFactory)
-            .setAudience(Collections.singletonList(clientId))
-            .build()
-
-        val idToken = verifier.verify(googleTokenDTO.token)
+        val idToken = googleIdTokenVerifier.verify(googleTokenDTO.token)
         if (idToken != null) {
             val payload = idToken.payload
             val email = payload.email
+            val name = payload["name"] as? String ?: "Unknown"
 
             if (dentistRepository.existsDentistByEmail(email)) {
                 throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "This user already exists")
@@ -158,6 +154,7 @@ class DentistService(
 
             val dentist = Dentist.DentistBuilder()
                 .username(UUID.randomUUID().toString())
+                .name(name)
                 .email(email)
                 .password(UUID.randomUUID().toString())
                 .build()

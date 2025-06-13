@@ -2,6 +2,7 @@ package com.example.E_Dentogram.service
 
 import com.example.E_Dentogram.dto.ToothDTO
 import com.example.E_Dentogram.model.*
+import com.example.E_Dentogram.repository.DentistRepository
 import com.example.E_Dentogram.repository.PatientRecordRepository
 import com.example.E_Dentogram.repository.PatientRepository
 import com.example.E_Dentogram.repository.ToothRepository
@@ -11,13 +12,19 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
+import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 @Generated
 @Service
 @Transactional
 class ToothService {
+
+
+    @Autowired
+    lateinit var dentistRepository : DentistRepository
 
     @Autowired
     lateinit var toothRepository : ToothRepository
@@ -50,29 +57,57 @@ class ToothService {
     }
 
     fun updateTeeth(medicalRecord: Int, toothDTO: ToothDTO, token:String): ToothDTO{
-
         val username = tokenService.extractUsername(token.substringAfter("Bearer "))
             ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+
+        try {
+            validateRequest(toothDTO)
+        } catch (e: IllegalArgumentException) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
+        }
+
+        val dentist = dentistRepository.findByUsername(username)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist")
 
         val patient = patientRepository.findById(medicalRecord)
             .orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist") }
 
         val existingTooth = toothRepository.findByNumberAndPatientMedicalRecord(toothDTO.number, medicalRecord)
-        val updatedTooth = updatedTooth(toothDTO,existingTooth,patient)
-        savePatientRecord(existingTooth,updatedTooth,patient,username)
+        val updatedTooth = updatedTooth(toothDTO,patient)
+        savePatientRecord(existingTooth,updatedTooth,patient,dentist.name!!)
 
         val savedTooth = toothRepository.save(updatedTooth)
 
         return ToothDTO.fromModel(savedTooth)
     }
 
-    private fun updatedTooth(toothDTO: ToothDTO,existingTooth: Tooth?,patient: Patient): Tooth {
+    private fun validateRequest(toothDTO: ToothDTO) {
+        val upState = ToothStateParser.stringToState(toothDTO.up)
+        val states = listOf(
+            ToothStateParser.stringToState(toothDTO.right),
+            ToothStateParser.stringToState(toothDTO.down),
+            ToothStateParser.stringToState(toothDTO.left),
+            ToothStateParser.stringToState(toothDTO.center)
+        )
+
+        val isValid = if (upState.isTotalState() && upState != TotalToothState.HEALTHFUL) {
+            states.all { it == upState }
+        } else {
+            states.all { !it.isTotalState() || it == TotalToothState.HEALTHFUL }
+        }
+        if (!isValid) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "This tooth state is invalid")
+        }
+    }
+
+
+    private fun updatedTooth(toothDTO: ToothDTO,patient: Patient): Tooth {
         val updatedTooth = try {
-            val up = combineStates(existingTooth?.up, ToothStateParser.stringToState(toothDTO.up))
-            val right = combineStates(existingTooth?.right, ToothStateParser.stringToState(toothDTO.right))
-            val down = combineStates(existingTooth?.down, ToothStateParser.stringToState(toothDTO.down))
-            val left = combineStates(existingTooth?.left, ToothStateParser.stringToState(toothDTO.left))
-            val center = combineStates(existingTooth?.center, ToothStateParser.stringToState(toothDTO.center))
+            val up = ToothStateParser.stringToState(toothDTO.up)
+            val right = ToothStateParser.stringToState(toothDTO.right)
+            val down =  ToothStateParser.stringToState(toothDTO.down)
+            val left =  ToothStateParser.stringToState(toothDTO.left)
+            val center = ToothStateParser.stringToState(toothDTO.center)
 
             Tooth.ToothBuilder()
                 .number(toothDTO.number)
@@ -88,14 +123,6 @@ class ToothService {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid data provided for teeth update", e)
         }
         return updatedTooth
-    }
-
-    private fun combineStates(oldState: ToothState?, newState: ToothState): ToothState {
-        return if (oldState == null) {
-            newState
-        } else {
-            oldState.combineWith(newState)
-        }
     }
 
     private fun savePatientRecord(before: Tooth?,after: Tooth?,patient: Patient,dentistName:String) {
@@ -125,5 +152,19 @@ class ToothService {
     private fun toothList(tooth : Tooth?):List<String>{
         return tooth?.toList() ?: listOf("HEALTHFUL","HEALTHFUL","HEALTHFUL","HEALTHFUL","HEALTHFUL","NOTHING")
     }
+
+    fun teethAt(date: LocalDateTime, medicalRecord: Int): List<ToothDTO>? {
+        if (patientRepository.existsById(medicalRecord)) {
+
+            val timestamp = Timestamp.valueOf(date)
+
+            val records = patientRecordRepository.findLatestToothRecordsUpToDate(medicalRecord, timestamp )
+            return records.map { record -> ToothDTO(record.tooth_number!!, record.after!!) }
+        }
+        else {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist")
+        }
+
+   }
 
 }

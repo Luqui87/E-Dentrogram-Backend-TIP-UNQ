@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDateTime
 
 
 @CrossOrigin(origins = ["http://localhost:5174"])
@@ -36,6 +37,11 @@ class ToothController{
         return updatedTeeth
     }
 
-
+    @Operation(summary = "Get all teeth at the given date")
+    @GetMapping("tooth/{medicalRecord}/version")
+    fun getTeethAtDate(@PathVariable medicalRecord: Int, @RequestParam date: LocalDateTime): ResponseEntity<List<ToothDTO>> {
+        val teethAtDate = service.teethAt(date,medicalRecord)
+        return ResponseEntity.ok(teethAtDate)
+    }
 
 }

@@ -6,15 +6,21 @@ import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.repository.DentistRepository
 import com.example.E_Dentogram.repository.PatientRepository
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import org.hamcrest.collection.IsCollectionWithSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
+import org.mockito.Mockito.anyString
+import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
@@ -39,6 +45,9 @@ class DentistControllerTest{
     @Autowired
     private lateinit var patientRepository : PatientRepository
 
+    @MockitoBean
+    private lateinit var googleIdTokenVerifier: GoogleIdTokenVerifier
+
     companion object{
         @Container
         private val postgreSQLContainer = PostgreSQLContainer<Nothing>("postgres:latest")
@@ -57,6 +66,7 @@ class DentistControllerTest{
     private fun getToken(): String {
         val registerDTO = mapOf(
             "username" to "User2000",
+            "name" to "User2000_name",
             "password" to "password2000",
             "email" to "User2000@gmail.com"
         )
@@ -74,10 +84,10 @@ class DentistControllerTest{
     private fun getTokenForUser(dentist: Dentist): String {
         val registerDTO = mapOf(
             "username" to dentist.username,
+            "name" to dentist.name,
             "password" to dentist.password,
             "email" to dentist.email
         )
-
         val result = mockMVC.perform(post("/register")
             .contentType(MediaType.APPLICATION_JSON)
             .content(jacksonObjectMapper().writeValueAsString(registerDTO)))
@@ -95,6 +105,113 @@ class DentistControllerTest{
     }
 
     @Test
+    fun `should registrate a dentist `(){
+        val registerDTO = mapOf(
+            "username" to "User",
+            "name" to "Natalia Natalia",
+            "password" to "password",
+            "email" to "User@gmail.com"
+        )
+
+         mockMVC.perform(post("/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(registerDTO)))
+            .andExpect(status().isCreated)
+    }
+
+    @Test
+    fun `should not create the same dentist `(){
+        val registerDTO = mapOf(
+            "username" to "User2000",
+            "name" to "User2000_name",
+            "password" to "password2000",
+            "email" to "User2000@gmail.com"
+        )
+
+        mockMVC.perform(post("/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(registerDTO)))
+            .andExpect(status().isCreated)
+
+        mockMVC.perform(post("/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(registerDTO)))
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should not create a dentist with a invalid google token`() {
+        val body = mapOf(
+            "token" to "invalid-token"
+        )
+
+        `when`(googleIdTokenVerifier.verify(anyString()))
+            .thenReturn(null as GoogleIdToken?)
+
+        mockMVC.perform(post("/register/google")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(body)))
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should register the dentist with a valid google token`() {
+
+        val googleToken : GoogleIdToken = Mockito.mock(GoogleIdToken::class.java)
+        val mockPayload: GoogleIdToken.Payload = GoogleIdToken.Payload()
+            .setEmail("User1@gmail.com")
+            .setEmailVerified(true)
+            .setSubject("User1_name")
+
+        val body = mapOf(
+            "token" to "eyJhbGciOiJSUzI1NiIsImtpZCI6Ik5FWTBOekUyUlRRd05UYzVOVGcyTkRrNU1qQXdRVFUwTmtFMk1rWkNORE14TWpnNE5qYzVNZyJ9.eyJuaWNrbmFtZSI6ImpvaG5kb2UiLCJuYW1lIjoiSm9obiBEb2UiLCJwaWN0dXJlIjoiaHR0cHM6Ly9hdmF0YXJzLmF1dGgwLmNvbS9hdmF0YXIuanBnIiwidXBkIjoxNjk0ODU4ODAwLCJzdWIiOiJhdXRoMHw2NTg4NDMyYjFhODJmODAxZGRmYjU1Y2IiLCJlbWFpbCI6ImplbWlAeGFtcGxlLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJpc3MiOiJodHRwczovL2FjY291bnQteHl6LmF1dGgwLmNvbS8iLCJhdWQiOiJodHRwczovL2FwaS54eXouY29tIiwiaWF0IjoxNzE3OTgwNzAwLCJleHAiOjE3MTgwNjYxMDB9.NK4z_KX0A6sZcIs8WT8RQoz5vQmpaAwqxEas5P0zY_OmC0O_UMxjHzYcWx94xY8SpC4sHE6-5Gl8rkKOos7xxdfNwe_pCFFtXGFOdJrD6fqOjROV_1TkFt8G8mavAdoO7shCLoCF2OBkWkTrqj7kTqGR0FoUdK70mXqfHdIBsPME"
+        )
+
+        `when`(googleToken.payload)
+            .thenReturn(mockPayload)
+
+        `when`(googleIdTokenVerifier.verify(anyString()))
+            .thenReturn(googleToken)
+
+        mockMVC.perform(post("/register/google")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(body)))
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isCreated)
+
+    }
+
+    @Test
+    fun `should not register a dentist with valid the same email`() {
+
+        this.getToken()
+
+        val googleToken : GoogleIdToken = Mockito.mock(GoogleIdToken::class.java)
+        val mockPayload: GoogleIdToken.Payload = GoogleIdToken.Payload()
+            .setEmail("User2000@gmail.com")
+            .setEmailVerified(true)
+            .setSubject("User1_name")
+
+        val body = mapOf(
+            "token" to "eyJhbGciOiJSUzI1NiIsImtpZCI6Ik5FWTBOekUyUlRRd05UYzVOVGcyTkRrNU1qQXdRVFUwTmtFMk1rWkNORE14TWpnNE5qYzVNZyJ9.eyJuaWNrbmFtZSI6ImpvaG5kb2UiLCJuYW1lIjoiSm9obiBEb2UiLCJwaWN0dXJlIjoiaHR0cHM6Ly9hdmF0YXJzLmF1dGgwLmNvbS9hdmF0YXIuanBnIiwidXBkIjoxNjk0ODU4ODAwLCJzdWIiOiJhdXRoMHw2NTg4NDMyYjFhODJmODAxZGRmYjU1Y2IiLCJlbWFpbCI6ImplbWlAeGFtcGxlLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJpc3MiOiJodHRwczovL2FjY291bnQteHl6LmF1dGgwLmNvbS8iLCJhdWQiOiJodHRwczovL2FwaS54eXouY29tIiwiaWF0IjoxNzE3OTgwNzAwLCJleHAiOjE3MTgwNjYxMDB9.NK4z_KX0A6sZcIs8WT8RQoz5vQmpaAwqxEas5P0zY_OmC0O_UMxjHzYcWx94xY8SpC4sHE6-5Gl8rkKOos7xxdfNwe_pCFFtXGFOdJrD6fqOjROV_1TkFt8G8mavAdoO7shCLoCF2OBkWkTrqj7kTqGR0FoUdK70mXqfHdIBsPME"
+        )
+
+        `when`(googleToken.payload)
+            .thenReturn(mockPayload)
+
+        `when`(googleIdTokenVerifier.verify(anyString()))
+            .thenReturn(googleToken)
+
+        mockMVC.perform(post("/register/google")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(body)))
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isUnauthorized)
+
+    }
+
+    @Test
     fun `should get a dentist `(){
 
         val accessToken = this.getToken()
@@ -109,10 +226,32 @@ class DentistControllerTest{
     }
 
     @Test
+    fun `should not get a dentist without authorization`(){
+
+        val dentist = Dentist.DentistBuilder()
+            .username("User1")
+            .name("User1_name")
+            .password("password1")
+            .email("User1@gmail.com")
+            .patients(mutableListOf())
+            .build()
+
+        this.getTokenForUser(dentist)
+
+         dentistRepository.findByUsername("User1")!!
+
+        mockMVC.perform(get("/dentist/user"))
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isForbidden)
+
+    }
+
+    @Test
     fun `should get dentist with the username`(){
 
         val dentist = Dentist.DentistBuilder()
             .username("User1")
+            .name("User1_name")
             .password("password1")
             .email("User1@gmail.com")
             .patients(mutableListOf())
@@ -129,6 +268,7 @@ class DentistControllerTest{
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.dentistID").value(registeredDentist.id))
             .andExpect(jsonPath("$.username").value("User1"))
+            .andExpect(jsonPath("$.name").value("User1_name"))
             .andExpect(jsonPath("$.patients", IsCollectionWithSize.hasSize<Array<Any>>(0)))
     }
 
@@ -138,6 +278,7 @@ class DentistControllerTest{
     fun `should add patient to the dentist`(){
         val dentist = Dentist.DentistBuilder()
             .username("User1")
+            .name("User1_name")
             .password("password1")
             .email("User1@gmail.com")
             .patients(mutableListOf())
@@ -145,6 +286,7 @@ class DentistControllerTest{
 
         val otherDentist = Dentist.DentistBuilder()
             .username("User2")
+            .name("User2_name")
             .password("password2")
             .email("User2@gmail.com")
             .patients(mutableListOf())
@@ -189,13 +331,49 @@ class DentistControllerTest{
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.dentistID").value(registeredDentist.id))
             .andExpect(jsonPath("$.username").value("User1"))
+            .andExpect(jsonPath("$.name").value("User1_name"))
             .andExpect(jsonPath("$.patients", IsCollectionWithSize.hasSize<Array<Any>>(1)))
+    }
+
+    @Test
+    fun `should not create and add a patient with wrong birthdate to the dentist`(){
+        val dentist = Dentist.DentistBuilder()
+            .username("User1")
+            .name("User1_name")
+            .password("password1")
+            .email("User1@gmail.com")
+            .patients(mutableListOf())
+            .build()
+
+
+        val body = mapOf(
+            "medicalRecord" to "123",
+            "dni" to "42421645",
+            "name" to "Lucas Alvarez",
+            "address" to "Bragado 1413",
+            "birthdate" to "2030-10-12",
+            "telephone" to "1153276406",
+            "email" to "lucas@mail.com"
+        )
+
+        val accessToken = this.getTokenForUser(dentist)
+        val registeredDentist = dentistRepository.findByUsername("User1")!!
+
+        mockMVC.perform(post("/dentist/add/${registeredDentist.id}")
+            .header("Authorization", "Bearer $accessToken")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(body)))
+
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isBadRequest)
+
     }
 
     @Test
     fun `should create and add patient to the dentist`(){
         val dentist = Dentist.DentistBuilder()
             .username("User1")
+            .name("User1_name")
             .password("password1")
             .email("User1@gmail.com")
             .patients(mutableListOf())
@@ -224,6 +402,7 @@ class DentistControllerTest{
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.dentistID").value(registeredDentist.id))
             .andExpect(jsonPath("$.username").value("User1"))
+            .andExpect(jsonPath("$.name").value("User1_name"))
             .andExpect(jsonPath("$.patients", IsCollectionWithSize.hasSize<Array<Any>>(1)))
     }
 
@@ -233,6 +412,7 @@ class DentistControllerTest{
 
         val dentist = Dentist.DentistBuilder()
             .username("User1")
+            .name("User1_name")
             .password("password1")
             .email("User1@gmail.com")
             .patients(mutableListOf())
@@ -265,6 +445,7 @@ class DentistControllerTest{
     fun `should try remove patient to the dentist without the patient and do nothing`(){
         val dentist = Dentist.DentistBuilder()
             .username("User1")
+            .name("User1_name")
             .password("password1")
             .email("User1@gmail.com")
             .patients(mutableListOf())
@@ -272,6 +453,7 @@ class DentistControllerTest{
 
         val otherDentist = Dentist.DentistBuilder()
             .username("User2")
+            .name("User2_name")
             .password("password2")
             .email("User2@gmail.com")
             .patients(mutableListOf())

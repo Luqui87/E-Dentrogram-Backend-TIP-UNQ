@@ -22,8 +22,6 @@ class AuthController(
     private val authenticationService: AuthenticationService
 ) {
 
-
-
     @PostMapping("/login")
     fun authenticate(
         @RequestBody authRequest: AuthenticationRequest

@@ -2,6 +2,10 @@ package com.example.E_Dentogram.config
 
 import com.example.E_Dentogram.repository.DentistRepository
 import com.example.E_Dentogram.service.CustomUserDetailService
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.gson.GsonFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -18,6 +22,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 @Configuration
 @EnableConfigurationProperties(JwtProperties::class)
 class Configuration {
+
+    @Value("\${google.client.clientId}")
+    private val clientId: String? = null
+
+    @Bean
+    fun googleIdTokenVerifier(): GoogleIdTokenVerifier {
+        val transport = NetHttpTransport()
+        val jsonFactory = GsonFactory.getDefaultInstance()
+
+        return GoogleIdTokenVerifier.Builder(transport, jsonFactory)
+            .setAudience(listOf(clientId))
+            .build()
+    }
 
     @Bean
     fun userDetailsService(dentistRepository: DentistRepository): UserDetailsService =

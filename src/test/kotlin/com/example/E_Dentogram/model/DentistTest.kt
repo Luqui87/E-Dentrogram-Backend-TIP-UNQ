@@ -111,6 +111,12 @@ class DentistTest{
         assertEquals("The email format is not valid.", exception.message)
     }
 
+    @Test
+    fun `should create a dentist with a valid name`() {
+        val dentist = Dentist.DentistBuilder().name("User1_name")
+
+        assertEquals("User1_name", dentist.name)
+    }
 
 
 
