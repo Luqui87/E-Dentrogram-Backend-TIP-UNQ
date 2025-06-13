@@ -180,7 +180,7 @@ class ToothControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(jacksonObjectMapper().writeValueAsString(body)))
             .andExpect(status().isBadRequest)
-            .andExpect(status().reason("Invalid data provided for teeth update"))
+            .andExpect(status().reason("Invalid tooth state: STATE"))
     }
 
     @Test
@@ -207,6 +207,52 @@ class ToothControllerTest {
             .andExpect(jsonPath("$.number").value(1))
             .andExpect(jsonPath("$.up").value("HEALTHY"))
     }
+
+    @Test
+    fun `should update teeth 2`() {
+        this.createPatient()
+        val token = this.getAccessToken()
+
+        val body1 =
+            mapOf(
+                "number" to "1",
+                "up" to "IMPLANT",
+                "right" to "IMPLANT",
+                "down" to "IMPLANT",
+                "left" to "IMPLANT",
+                "center" to "IMPLANT",
+                "special" to "NOTHING"
+            )
+
+        val body2 =
+            mapOf(
+                "number" to "1",
+                "up" to "HEALTHFUL",
+                "right" to "HEALTHFUL",
+                "down" to "HEALTHFUL",
+                "left" to "HEALTHFUL",
+                "center" to "CARIES",
+                "special" to "NOTHING"
+            )
+
+        mockMvc.perform(put("/update/tooth/123")
+            .header("Authorization", "Bearer $token")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(body1)))
+
+        mockMvc.perform(put("/update/tooth/123")
+            .header("Authorization", "Bearer $token")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(body2)))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.number").value(1))
+            .andExpect(jsonPath("$.up").value("HEALTHFUL"))
+            .andExpect(jsonPath("$.right").value("HEALTHFUL"))
+            .andExpect(jsonPath("$.down").value("HEALTHFUL"))
+            .andExpect(jsonPath("$.center").value("CARIES"))
+            .andExpect(jsonPath("$.special").value("NOTHING"))
+    }
+
 
     @Test
     fun `all teeth should be an empty list`() {
