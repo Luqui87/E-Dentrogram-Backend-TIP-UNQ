@@ -26,6 +26,7 @@ class DentistService(
     private val userDetailService: CustomUserDetailService,
     private val tokenService: TokenService,
     private val jwtProperties: JwtProperties,
+    private val googleIdTokenVerifier: GoogleIdTokenVerifier
 ) {
 
     @Autowired
@@ -141,15 +142,7 @@ class DentistService(
 
     fun signUpGoogle(googleTokenDTO: GoogleTokenDTO): AuthenticationResponse? {
 
-
-        val transport = NetHttpTransport()
-        val jsonFactory = GsonFactory.getDefaultInstance()
-
-        val verifier = GoogleIdTokenVerifier.Builder(transport, jsonFactory)
-            .setAudience(Collections.singletonList(clientId))
-            .build()
-
-        val idToken = verifier.verify(googleTokenDTO.token)
+        val idToken = googleIdTokenVerifier.verify(googleTokenDTO.token)
         if (idToken != null) {
             val payload = idToken.payload
             val email = payload.email

@@ -47,5 +47,4 @@ class PatientController {
         return ResponseEntity.ok(patientRecord)
     }
 
-
 }

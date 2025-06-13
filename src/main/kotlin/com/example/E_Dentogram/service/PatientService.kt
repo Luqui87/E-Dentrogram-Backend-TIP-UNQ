@@ -38,37 +38,6 @@ class PatientService {
             orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist") }
     }
 
-    fun createPatient(patientDto: PatientDTO): PatientDTO {
-
-        if( patientRepository.existsById(patientDto.medicalRecord)){
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "A patient with this medical record already exists")
-        }
-
-        val patient = try {
-            Patient.PatientBuilder()
-                .medicalRecord(patientDto.medicalRecord)
-                .dni(patientDto.dni)
-                .name( patientDto.name)
-                .address(patientDto.address)
-                .birthdate(patientDto.birthdate)
-                .telephone(patientDto.telephone)
-                .email(patientDto.email)
-                .build()
-        } catch (e: Exception) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid data provided for register patient : ${e.message}", e)
-        }
-
-        try {
-            patientRepository.save(patient)
-        }catch (e: Exception) {
-            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Failed to save patient: ${e.message}")
-        }
-
-        return patientDto
-
-
-
-    }
 
     @Transactional(readOnly=true)
     fun allSimplePatients(): List<PatientDTO>? {

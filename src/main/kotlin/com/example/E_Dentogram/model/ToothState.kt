@@ -5,6 +5,7 @@ interface ToothState {
 
     fun combineWithPartial(partial: PartialToothState): ToothState
     fun combineWithTotal(total: TotalToothState): ToothState
+    fun isTotalState(): Boolean {return  false}
 
 }
 
@@ -69,11 +70,17 @@ enum class TotalToothState : ToothState {
         return if (this == HEALTHFUL) { partial } else { this }
     }
 
+    override fun isTotalState() : Boolean{
+        return true
+    }
+
     companion object {
         fun stringToState(state: String): TotalToothState {
             return TotalToothState.valueOf(state.uppercase())
         }
     }
+
+
 
 }
 
