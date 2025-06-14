@@ -186,7 +186,7 @@ class ToothControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(jacksonObjectMapper().writeValueAsString(body)))
             .andExpect(status().isBadRequest)
-            .andExpect(status().reason("Invalid data provided for teeth update"))
+            .andExpect(status().reason("Invalid tooth state: STATE"))
     }
 
     @Test
