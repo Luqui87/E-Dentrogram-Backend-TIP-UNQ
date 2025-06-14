@@ -3,6 +3,7 @@ package com.example.E_Dentogram.controller
 import com.example.E_Dentogram.dto.AuthenticationResponse
 import com.example.E_Dentogram.model.*
 import com.example.E_Dentogram.repository.DentistRepository
+import com.example.E_Dentogram.repository.PatientRecordRepository
 import com.example.E_Dentogram.repository.PatientRepository
 import com.example.E_Dentogram.repository.ToothRepository
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -21,7 +22,9 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.http.MediaType
+import org.springframework.security.test.context.support.WithMockUser
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Testcontainers
 @AutoConfigureMockMvc
@@ -40,6 +43,9 @@ class ToothControllerTest {
     @Autowired
     private lateinit var dentistRepository: DentistRepository
 
+    @Autowired
+    private lateinit var patientRecordRepository: PatientRecordRepository
+
     companion object{
         @Container
         private val postgreSQLContainer = PostgreSQLContainer<Nothing>("postgres:latest")
@@ -55,10 +61,10 @@ class ToothControllerTest {
 
     private fun getAccessToken(): String {
         val registerDTO = mapOf(
-            "username" to "User2",
-            "name" to "User2_name",
-            "password" to "password2",
-            "email" to "User2@gmail.com"
+            "username" to "User1",
+            "name" to "User1_name",
+            "password" to "password1",
+            "email" to "User1@gmail.com"
         )
 
         val result = mockMvc.perform(post("/register")
@@ -74,10 +80,10 @@ class ToothControllerTest {
 
     fun createPatient(): Patient {
         val dentist = Dentist.DentistBuilder()
-            .username("User1")
-            .name("User1_name")
-            .password("password1")
-            .email("User1@gmail.com")
+            .username("User2")
+            .name("User2_name")
+            .password("password2")
+            .email("User2@gmail.com")
             .patients(mutableListOf())
             .build()
 
@@ -191,7 +197,7 @@ class ToothControllerTest {
         val body =
             mapOf(
                 "number" to "1",
-                "up" to "HEALTHY",
+                "up" to "CARIES",
                 "right" to "HEALTHY",
                 "down" to "HEALTHY",
                 "left" to "HEALTHY",
@@ -205,7 +211,7 @@ class ToothControllerTest {
             .content(jacksonObjectMapper().writeValueAsString(body)))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.number").value(1))
-            .andExpect(jsonPath("$.up").value("HEALTHY"))
+            .andExpect(jsonPath("$.up").value("CARIES"))
     }
 
     @Test
@@ -255,12 +261,65 @@ class ToothControllerTest {
 
 
     @Test
+    @WithMockUser(username = "testuser", roles = ["USER"])
     fun `all teeth should be an empty list`() {
         val token = getAccessToken()
 
-        mockMvc.perform(get("/allTooth")
-            .header("Authorization", "Bearer $token"))
+        mockMvc.perform(get("/allTooth"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(0)))
     }
+
+    @Test
+    @WithMockUser(username = "testuser", roles = ["USER"])
+    fun `should have an empty odontogram now`(){
+        this.createPatient()
+
+        val time = LocalDateTime.now()
+
+        mockMvc.perform(get("/tooth/123/version?date=${time}"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(0)))
+    }
+
+    @Test
+    @WithMockUser(username = "testuser", roles = ["USER"])
+    fun `should bring only one change`(){
+        val patient = this.createPatient()
+
+        val firstChange = LocalDateTime.of(2025,10,12,20,15,20,5)
+
+        val secondChange = LocalDateTime.of(2025,10,12,1,15,20,5)
+
+        val firstRecord = PatientRecord.PatientRecordBuilder()
+            .date(firstChange)
+            .tooth_number(1)
+            .before(listOf("HEALTHFUL","HEALTHFUL","HEALTHFUL","HEALTHFUL","HEALTHFUL","NOTHING"))
+            .after(listOf("CARIES","HEALTHFUL","HEALTHFUL","HEALTHFUL","HEALTHFUL","NOTHING"))
+            .dentistName("Alvarez Lucas")
+            .patient(patient)
+            .build()
+
+        val secondRecord =  PatientRecord.PatientRecordBuilder()
+            .date(secondChange)
+            .tooth_number(1)
+            .before(listOf("CARIES","HEALTHFUL","HEALTHFUL","HEALTHFUL","HEALTHFUL","NOTHING"))
+            .after(listOf("CARIES","CARIES","HEALTHFUL","HEALTHFUL","HEALTHFUL","NOTHING"))
+            .dentistName("Alvarez Lucas")
+            .patient(patient)
+            .build()
+
+        patientRecordRepository.save(firstRecord)
+        patientRecordRepository.save(secondRecord)
+
+        mockMvc.perform(get("/tooth/123/version?date=${firstChange}"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$", IsCollectionWithSize.hasSize<Array<Any>>(1)))
+            .andExpect(jsonPath("$[0].number").value(1))
+            .andExpect(jsonPath("$[0].up").value("CARIES"))
+            .andExpect(jsonPath("$[0].right").value("HEALTHFUL"))
+
+    }
+
+
 }
