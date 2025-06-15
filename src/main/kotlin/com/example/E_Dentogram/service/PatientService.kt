@@ -2,8 +2,9 @@ package com.example.E_Dentogram.service
 
 import com.example.E_Dentogram.dto.PatientDTO
 import com.example.E_Dentogram.dto.PatientRecordDTO
+import com.example.E_Dentogram.dto.PatientJournalDTO
 import com.example.E_Dentogram.model.Patient
-import com.example.E_Dentogram.model.PatientRecord
+import com.example.E_Dentogram.repository.PatientJournalRepository
 import com.example.E_Dentogram.repository.PatientRecordRepository
 import com.example.E_Dentogram.repository.PatientRepository
 import jakarta.annotation.Generated
@@ -25,6 +26,9 @@ class PatientService {
 
     @Autowired
     lateinit var patientRecordRepository : PatientRecordRepository
+
+    @Autowired
+    lateinit var patientJournalRepository: PatientJournalRepository
 
     @Transactional(readOnly=true)
     fun allPatients(): List<Patient>? {
@@ -60,6 +64,15 @@ class PatientService {
 
         val patientRecordDTO = PatientRecordDTO(page.content,page.totalElements )
         return patientRecordDTO
+    }
+
+    @Transactional(readOnly = true)
+    fun getPatientJournal(patientMedicalRecord: Int, pageNumber: Int): PatientJournalDTO {
+        val pageSize = 10
+        val pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "date"))
+        val page = patientJournalRepository.findByPatient_MedicalRecord(patientMedicalRecord, pageRequest)
+
+        return PatientJournalDTO(journal = page.content, total = page.totalElements, pageSize =  pageSize)
     }
 
 

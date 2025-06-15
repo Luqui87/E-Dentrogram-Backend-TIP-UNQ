@@ -2,6 +2,7 @@ package com.example.E_Dentogram.model
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "journal_table")
@@ -17,6 +18,9 @@ class PatientJournal(builder: PatientJournalBuilder) {
     @Column
     var log : String? = builder.log
 
+    @Column
+    var date : LocalDateTime? = builder.date
+
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
@@ -28,6 +32,8 @@ class PatientJournal(builder: PatientJournalBuilder) {
             private set
         var log: String? = null
             private set
+        var date: LocalDateTime? = null
+            private set
         var patient: Patient? = null
             private set
 
@@ -37,6 +43,10 @@ class PatientJournal(builder: PatientJournalBuilder) {
 
         fun log(log: String) = apply {
             this.log = log
+        }
+
+        fun date(date: LocalDateTime) = apply {
+            this.date = date
         }
 
         fun patient(patient: Patient) = apply {
