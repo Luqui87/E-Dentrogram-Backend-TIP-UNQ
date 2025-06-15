@@ -1,9 +1,9 @@
 package com.example.E_Dentogram.service
 
-import com.example.E_Dentogram.dto.PatientDTO
-import com.example.E_Dentogram.dto.PatientRecordDTO
-import com.example.E_Dentogram.dto.PatientJournalDTO
+import com.example.E_Dentogram.dto.*
 import com.example.E_Dentogram.model.Patient
+import com.example.E_Dentogram.model.PatientJournal
+import com.example.E_Dentogram.model.Tag
 import com.example.E_Dentogram.repository.PatientJournalRepository
 import com.example.E_Dentogram.repository.PatientRecordRepository
 import com.example.E_Dentogram.repository.PatientRepository
@@ -67,13 +67,40 @@ class PatientService {
     }
 
     @Transactional(readOnly = true)
-    fun getPatientJournal(patientMedicalRecord: Int, pageNumber: Int): PatientJournalDTO {
+    fun getPatientJournal(patientMedicalRecord: Int, pageNumber: Int): JournalDTO {
         val pageSize = 10
         val pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "date"))
         val page = patientJournalRepository.findByPatient_MedicalRecord(patientMedicalRecord, pageRequest)
 
-        return PatientJournalDTO(journal = page.content, total = page.totalElements, pageSize =  pageSize)
+        return JournalDTO(journal = page.content, total = page.totalElements, pageSize =  pageSize)
     }
+
+    fun postPatientJournal(patientMedicalRecord: Int, patientJournalRequest: PatientJournalRequest): PatientJournal {
+        val patient = patientRepository.findById(patientMedicalRecord)
+            .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist") }
+
+        val tags = patientJournalRequest.tags.map { tag -> Tag.stringToState(tag) }
+
+        val patientJournal = PatientJournal.PatientJournalBuilder()
+            .date(patientJournalRequest.date)
+            .tags(tags)
+            .log(patientJournalRequest.log)
+            .patient(patient)
+            .build()
+
+        if (patient.journal == null) {
+            patient.journal = mutableListOf()
+        }
+
+        patientJournalRepository.save(patientJournal)
+
+        patient.journal!!.add(patientJournal)
+
+        patientRepository.save(patient)
+
+        return patientJournal
+    }
+
 
 
 }

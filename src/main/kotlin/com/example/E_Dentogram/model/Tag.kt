@@ -5,8 +5,13 @@ enum class Tag {
     SURGERY;
 
     companion object {
-        fun stringToState(state: String): Tag {
-            return Tag.valueOf(state.uppercase())
+        fun stringToState(tag: String): Tag {
+            try {
+                return Tag.valueOf(tag.uppercase())
+            }catch (e: IllegalArgumentException) {
+                throw IllegalArgumentException("Invalid tag : $tag")
+            }
+
         }
     }
 }
