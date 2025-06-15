@@ -37,6 +37,10 @@ class Patient(builder: PatientBuilder) {
     @JsonIgnore
     var historial: MutableList<PatientRecord>? = builder.historical
 
+    @OneToMany(mappedBy = "patient", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
+    var journal: MutableList<PatientJournal>? = builder.journal
+
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "dentist_id", nullable = false)
@@ -61,6 +65,8 @@ class Patient(builder: PatientBuilder) {
         var teeth: MutableList<Tooth>? = null
             private set
         var historical: MutableList<PatientRecord>? = null
+            private set
+        var journal: MutableList<PatientJournal>? = null
             private set
         var dentist: Dentist? = null
             private set
