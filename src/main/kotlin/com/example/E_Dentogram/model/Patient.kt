@@ -149,4 +149,12 @@ class Patient(builder: PatientBuilder) {
         this.dentist = dentist
     }
 
+    fun update(telephone: Long, name: String, email: String, address: String) {
+        this.telephone = telephone
+        this.name = name
+        this.email = email
+        this.address = address
+    }
+
+
 }

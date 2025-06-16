@@ -60,5 +60,12 @@ class PatientController {
         return ResponseEntity.ok(patientRecord)
     }
 
+    @Operation(summary = "Update patient with the medical record")
+    @PutMapping("/patient/update/{patientMedicalRecord}")
+    fun updatePatient(@PathVariable patientMedicalRecord: Int,@RequestBody patientDTO:PatientDTO): ResponseEntity<Patient> {
+        val patient = service.updatePatient(patientMedicalRecord,patientDTO)
+        return ResponseEntity.ok(patient)
+    }
+
 
 }

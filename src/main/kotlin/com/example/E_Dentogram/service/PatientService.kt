@@ -101,6 +101,16 @@ class PatientService {
         return patientJournal
     }
 
+    fun updatePatient(patientMedicalRecord: Int, patientDTO: PatientDTO): Patient? {
+        val patient = patientRepository.findById(patientMedicalRecord)
+            .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist") }
+
+        patient.update(patientDTO.telephone,patientDTO.name,patientDTO.email,patientDTO.address)
+
+        patientRepository.save(patient)
+
+        return patient
+    }
 
 
 }
