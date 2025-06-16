@@ -23,32 +23,6 @@ object ToothStateParser {
     }
 }
 
-// T - T
-// MISSING.combineWith(EXTRACTION)
-//     EXTRACTION.combineWithTotal(MISSING)
-//          EXTRACTION
-
-// T - P
-// MISSING.combineWith(RESTORATION)
-//     RESTORATION.combineWithTotal(MISSING)
-//          EXTRACTION
-
-// P - T
-// RESTORATION.combineWith(MISSING)
-//     MISSING.combineWithPartial(RESTORATION)
-//          MISSING
-
-// P - HEALTHFUL
-// RESTORATION.combineWith(HEALTHFUL)
-//     HEALTHFUL.combineWithPartial(RESTORATION)
-//          RESTORATION
-
-// P - P
-// CARIES.combineWith(RESTORATION)
-//     RESTORATION.combineWithPartial(CARIES)
-//          RESTORATION
-
-
 enum class TotalToothState : ToothState {
     HEALTHFUL,
     MISSING,
