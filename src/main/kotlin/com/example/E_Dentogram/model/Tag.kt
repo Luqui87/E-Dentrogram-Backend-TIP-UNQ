@@ -2,7 +2,13 @@ package com.example.E_Dentogram.model
 
 enum class Tag {
     GENERAL_REVIEW,
-    SURGERY;
+    SURGERY,
+    CLEANING,
+    WHITENING,
+    ORTHODONTICS,
+    FLUORIDE,
+    PEDIATRIC,
+    CHECKUP;
 
     companion object {
         fun stringToState(tag: String): Tag {
