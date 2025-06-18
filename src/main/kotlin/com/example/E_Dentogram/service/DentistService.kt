@@ -7,11 +7,11 @@ import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.repository.DentistRepository
 import com.example.E_Dentogram.repository.PatientRepository
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
-import com.google.api.client.http.javanet.NetHttpTransport
-import com.google.api.client.json.gson.GsonFactory
 import jakarta.annotation.Generated
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -172,5 +172,17 @@ class DentistService(
         else{
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
         }
+    }
+
+    @Transactional(readOnly = true)
+    fun getDentistPatient(token: String, pageNumber: Int): PatientPaginationDTO {
+        val username = tokenService.extractUsername(token.substringAfter("Bearer "))
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+
+        val pageSize = 20
+        val pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by("name").ascending())
+        val patientPage = patientRepository.findByDentistUsername(username, pageRequest)
+
+        return PatientPaginationDTO.fromModel(patientPage)
     }
 }
