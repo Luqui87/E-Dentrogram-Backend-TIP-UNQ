@@ -179,7 +179,7 @@ class DentistService(
         val username = tokenService.extractUsername(token.substringAfter("Bearer "))
             ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
 
-        val pageSize = 20
+        val pageSize = 10
         val pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by("name").ascending())
         val patientPage = patientRepository.findByDentistUsername(username, pageRequest)
 
