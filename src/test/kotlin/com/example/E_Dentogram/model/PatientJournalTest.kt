@@ -35,7 +35,7 @@ class PatientJournalTest{
         val tags : MutableSet<String> = mutableSetOf("Revisión", "Blanqueamiento", "Blanqueamiento")
         val journal = PatientJournal.PatientJournalBuilder().tags(tags)
 
-        assertEquals(mutableListOf("Revisión", "Blanqueamiento"), journal.tags)
+        assertEquals(mutableSetOf("Revisión", "Blanqueamiento"), journal.tags)
     }
 
 
