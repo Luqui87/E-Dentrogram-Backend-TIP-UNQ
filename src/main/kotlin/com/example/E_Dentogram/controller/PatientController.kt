@@ -46,7 +46,7 @@ class PatientController {
         return ResponseEntity.ok(patientRecord)
     }
 
-    @Operation(summary = "The patient with the medical record")
+    @Operation(summary = "Get the patient journal")
     @GetMapping("/patient/journal/{patientMedicalRecord}/{pageNumber}")
     fun getPatientJournal(@PathVariable patientMedicalRecord: Int,@PathVariable pageNumber:Int): ResponseEntity<JournalDTO> {
         val patientRecord = service.getPatientJournal(patientMedicalRecord,pageNumber)
