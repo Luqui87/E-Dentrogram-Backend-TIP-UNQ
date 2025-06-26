@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 
 
 class PatientJournalRequest(
-    var tags: List<String>,
+    var tags: Set<String>,
     val log: String,
     val date: LocalDateTime
 )

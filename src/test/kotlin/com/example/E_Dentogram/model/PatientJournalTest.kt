@@ -1,6 +1,7 @@
 package com.example.E_Dentogram.model
 
 import org.junit.jupiter.api.Assertions.*
+import org.testcontainers.shaded.org.apache.commons.lang3.mutable.Mutable
 import java.time.LocalDateTime
 import kotlin.test.Test
 
@@ -23,18 +24,18 @@ class PatientJournalTest{
 
     @Test
     fun `should create a dentist without tag`() {
-        val tags : MutableList<Tag> = mutableListOf()
+        val tags : MutableSet<String> = mutableSetOf<String>()
         val journal = PatientJournal.PatientJournalBuilder().tags(tags)
 
-        assertEquals(mutableListOf<Tag>(), journal.tags)
+        assertEquals(mutableSetOf<String>(), journal.tags)
     }
 
     @Test
     fun `should create a dentist with a valid after`() {
-        val tags : MutableList<Tag> = mutableListOf(Tag.SURGERY,Tag.GENERAL_REVIEW)
+        val tags : MutableSet<String> = mutableSetOf("Revisión", "Blanqueamiento", "Blanqueamiento")
         val journal = PatientJournal.PatientJournalBuilder().tags(tags)
 
-        assertEquals(mutableListOf(Tag.SURGERY,Tag.GENERAL_REVIEW), journal.tags)
+        assertEquals(mutableListOf("Revisión", "Blanqueamiento"), journal.tags)
     }
 
 

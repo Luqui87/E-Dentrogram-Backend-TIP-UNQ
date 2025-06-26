@@ -12,8 +12,8 @@ class PatientJournal(builder: PatientJournalBuilder) {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
-    @Column
-    var tags: List<Tag>? = builder.tags
+    @ElementCollection
+    var tags: Set<String>? = builder.tags
 
     @Column
     var log : String? = builder.log
@@ -28,7 +28,7 @@ class PatientJournal(builder: PatientJournalBuilder) {
 
 
     class PatientJournalBuilder {
-        var tags: List<Tag>? = null
+        var tags: Set<String>? = null
             private set
         var log: String? = null
             private set
@@ -37,7 +37,7 @@ class PatientJournal(builder: PatientJournalBuilder) {
         var patient: Patient? = null
             private set
 
-        fun tags(tags: List<Tag>) = apply {
+        fun tags(tags: Set<String>) = apply {
             this.tags = tags
         }
 

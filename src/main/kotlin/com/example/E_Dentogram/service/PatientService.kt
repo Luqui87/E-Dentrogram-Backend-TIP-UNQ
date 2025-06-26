@@ -79,11 +79,10 @@ class PatientService {
         val patient = patientRepository.findById(patientMedicalRecord)
             .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist") }
 
-        val tags = patientJournalRequest.tags.map { tag -> Tag.stringToState(tag) }
 
         val patientJournal = PatientJournal.PatientJournalBuilder()
             .date(patientJournalRequest.date)
-            .tags(tags)
+            .tags(patientJournalRequest.tags)
             .log(patientJournalRequest.log)
             .patient(patient)
             .build()

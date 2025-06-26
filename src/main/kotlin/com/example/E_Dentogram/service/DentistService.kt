@@ -173,4 +173,18 @@ class DentistService(
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
         }
     }
+
+    fun updateTags(tags: List<String>, token: String): DentistDTO? {
+        val username = tokenService.extractUsername(token.substringAfter("Bearer "))
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+
+        val dentist = dentistRepository.findByUsername(username)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist")
+
+        dentist.tags = tags
+
+        dentistRepository.save(dentist)
+
+        return DentistDTO.fromModel(dentist)
+    }
 }
