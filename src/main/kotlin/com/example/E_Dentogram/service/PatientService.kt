@@ -100,15 +100,15 @@ class PatientService {
         return patientJournal
     }
 
-    fun updatePatient(patientMedicalRecord: Int, patientDTO: PatientDTO): Patient? {
-        val patient = patientRepository.findById(patientMedicalRecord)
+    fun updatePatient(patientDTO: PatientDTO): PatientDTO? {
+        val patient = patientRepository.findById(patientDTO.medicalRecord)
             .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist") }
 
         patient.update(patientDTO.telephone,patientDTO.name,patientDTO.email,patientDTO.address)
 
         patientRepository.save(patient)
 
-        return patient
+        return PatientDTO.fromModel(patient)
     }
 
 
