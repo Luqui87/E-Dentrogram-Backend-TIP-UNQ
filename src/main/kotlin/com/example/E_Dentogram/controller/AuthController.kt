@@ -31,8 +31,8 @@ class AuthController(
     @PostMapping("/login/google")
     fun authenticateWithGoogle(@RequestBody googleTokenDTO: GoogleTokenDTO): ResponseEntity<AuthenticationResponse>{
 
-        val accessToken = authenticationService.authenticationGoogle(googleTokenDTO)
-        return ResponseEntity.status(HttpStatus.OK).body(accessToken)
+        val response = authenticationService.authenticationGoogle(googleTokenDTO)
+        return response
 
 
     }

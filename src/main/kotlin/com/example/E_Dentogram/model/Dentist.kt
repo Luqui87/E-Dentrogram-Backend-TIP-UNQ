@@ -25,6 +25,14 @@ class Dentist(builder: DentistBuilder) {
 
     var role: Role = Role.USER
 
+    @ElementCollection
+    var tags: List<String> = listOf("Revisión General",
+        "Cirugía",
+        "Limpieza",
+        "Blanqueamiento",
+        "Ortodoncia",
+        "Fluor")
+
     @OneToMany(mappedBy = "dentist", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     var patients: MutableList<Patient>? = builder.patients
 

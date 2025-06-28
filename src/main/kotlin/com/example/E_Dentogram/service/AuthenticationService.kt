@@ -4,19 +4,18 @@ import com.example.E_Dentogram.config.JwtProperties
 import com.example.E_Dentogram.dto.AuthenticationRequest
 import com.example.E_Dentogram.dto.AuthenticationResponse
 import com.example.E_Dentogram.dto.GoogleTokenDTO
+import com.example.E_Dentogram.model.Dentist
 import com.example.E_Dentogram.repository.DentistRepository
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
-import com.google.api.client.http.javanet.NetHttpTransport
-import com.google.api.client.json.gson.GsonFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
+import org.springframework.security.core.userdetails.UsernameNotFoundException
+
 
 @Service
 class AuthenticationService(
@@ -25,6 +24,7 @@ class AuthenticationService(
     private val tokenService: TokenService,
     private val jwtProperties: JwtProperties,
     private val googleIdTokenVerifier: GoogleIdTokenVerifier,
+    private val dentistRepository: DentistRepository
 ) {
 
 
@@ -47,7 +47,7 @@ class AuthenticationService(
         )
     }
 
-    fun authenticationGoogle(googleToken: GoogleTokenDTO): AuthenticationResponse {
+    fun authenticationGoogle(googleToken: GoogleTokenDTO): ResponseEntity<AuthenticationResponse> {
 
         return try {
             val idToken = googleIdTokenVerifier.verify(googleToken.token)
@@ -55,20 +55,44 @@ class AuthenticationService(
                 val payload = idToken.payload
                 val email = payload.email
 
-                val user = userDetailService.loadUserByUsername(email)
+                var responseStatus = HttpStatus.OK
+
+                val user = try {
+                    userDetailService.loadUserByUsername(email)
+
+
+                } catch (e: UsernameNotFoundException) {
+                    val name = payload["name"] as? String ?: "Unknown"
+
+                    val dentist = Dentist.DentistBuilder()
+                        .username(UUID.randomUUID().toString())
+                        .name(name)
+                        .email(email)
+                        .password(UUID.randomUUID().toString())
+                        .build()
+
+                    dentistRepository.save(dentist)
+
+                    responseStatus = HttpStatus.CREATED
+
+                    userDetailService.loadUserByUsername(dentist.email!!)
+
+                }
+
                 val accessToken = tokenService.generate(
                     userDetails = user,
                     expirationDate = Date(System.currentTimeMillis() + jwtProperties.accessTokenExpiration)
                 )
 
-                 AuthenticationResponse(accessToken = accessToken)
+                val response = AuthenticationResponse(accessToken = accessToken)
+
+                ResponseEntity.status(responseStatus).body(response)
             }
             else{
                 throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized")
             }
         }
         catch (e: Exception){
-            println(e)
             throw  ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token")
         }
 

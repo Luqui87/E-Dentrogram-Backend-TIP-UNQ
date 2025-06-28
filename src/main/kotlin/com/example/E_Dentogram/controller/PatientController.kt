@@ -1,10 +1,9 @@
 package com.example.E_Dentogram.controller
 
 
-import com.example.E_Dentogram.dto.PatientDTO
-import com.example.E_Dentogram.dto.PatientRecordDTO
+import com.example.E_Dentogram.dto.*
 import com.example.E_Dentogram.model.Patient
-import com.example.E_Dentogram.model.PatientRecord
+import com.example.E_Dentogram.model.PatientJournal
 import com.example.E_Dentogram.service.PatientService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.beans.factory.annotation.Autowired
@@ -46,5 +45,27 @@ class PatientController {
         val patientRecord = service.getPatientRecords(patientMedicalRecord,pageNumber)
         return ResponseEntity.ok(patientRecord)
     }
+
+    @Operation(summary = "Get the patient journal")
+    @GetMapping("/patient/journal/{patientMedicalRecord}/{pageNumber}")
+    fun getPatientJournal(@PathVariable patientMedicalRecord: Int,@PathVariable pageNumber:Int): ResponseEntity<JournalDTO> {
+        val patientRecord = service.getPatientJournal(patientMedicalRecord,pageNumber)
+        return ResponseEntity.ok(patientRecord)
+    }
+
+    @Operation(summary = "The add entry to the journal to patient with the medical record")
+    @PostMapping("/patient/journal/add/{patientMedicalRecord}")
+    fun postPatientJournal(@PathVariable patientMedicalRecord: Int,@RequestBody journalPatientRequest: PatientJournalRequest): ResponseEntity<PatientJournal> {
+        val patientRecord = service.postPatientJournal(patientMedicalRecord,journalPatientRequest)
+        return ResponseEntity.ok(patientRecord)
+    }
+
+    @Operation(summary = "Update patient with the medical record")
+    @PutMapping("/patient/update")
+    fun updatePatient(@RequestBody patientDTO:PatientDTO): ResponseEntity<PatientDTO> {
+        val patient = service.updatePatient(patientDTO)
+        return ResponseEntity.ok(patient!!)
+    }
+
 
 }

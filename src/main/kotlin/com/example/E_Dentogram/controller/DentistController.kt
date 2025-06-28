@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*
 class DentistController {
 
     @Autowired
+    private lateinit var dentistService: DentistService
+
+    @Autowired
     lateinit var service: DentistService
 
 
@@ -28,6 +31,14 @@ class DentistController {
     fun getDentist(@RequestHeader("Authorization") token: String): ResponseEntity<DentistDTO> {
 
         val dentist = service.getDentist(token)
+        return ResponseEntity.ok(dentist)
+    }
+
+    @Operation(summary = "Get pagination dentist´s patient")
+    @GetMapping("/dentist/patient/{pageNumber}")
+    fun getDentistPatient(@RequestHeader("Authorization") token: String,@PathVariable pageNumber:Int): ResponseEntity<PatientPaginationDTO> {
+
+        val dentist = service.getDentistPatient(token,pageNumber)
         return ResponseEntity.ok(dentist)
     }
 
@@ -57,6 +68,13 @@ class DentistController {
     fun signUpGoogle(@RequestBody googleTokenDTO: GoogleTokenDTO): ResponseEntity<AuthenticationResponse> {
         val accessToken = service.signUpGoogle(googleTokenDTO)
         return ResponseEntity.status(HttpStatus.CREATED).body(accessToken)
+    }
+
+    @Operation(summary = "Update dentist tags")
+    @PatchMapping("/dentist/update/tags")
+    fun updateDentistTags(@RequestBody tags: List<String>, @RequestHeader("Authorization") token: String) : ResponseEntity<DentistDTO> {
+        val dentist = dentistService.updateTags(tags,token)
+        return ResponseEntity.ok().body(dentist)
     }
 
 }
