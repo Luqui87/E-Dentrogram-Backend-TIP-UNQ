@@ -199,4 +199,20 @@ class DentistService(
 
         return PatientPaginationDTO.fromModel(patientPage)
     }
+
+
+    fun getDentistPatientQuery(token: String, pageNumber: Int, query: String): PatientPaginationDTO? {
+        if (query.isBlank()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Search query cannot be blank")
+        }
+
+        val username = tokenService.extractUsername(token.substringAfter("Bearer "))
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+
+        val pageSize = 10
+        val pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by("name").ascending())
+        val patientPage = patientRepository.findByDentistUsernameAndNameContainingIgnoreCase(username, query, pageRequest)
+
+        return PatientPaginationDTO.fromModel(patientPage)
+    }
 }

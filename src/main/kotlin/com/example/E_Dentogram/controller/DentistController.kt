@@ -42,6 +42,14 @@ class DentistController {
         return ResponseEntity.ok(dentist)
     }
 
+    @Operation(summary = "Get pagination dentist´s patient who match")
+    @GetMapping("/dentist/patient/{query}/{pageNumber}")
+    fun getDentistPatientQuery(@RequestHeader("Authorization") token: String,@PathVariable pageNumber:Int,@PathVariable query:String): ResponseEntity<PatientPaginationDTO> {
+
+        val dentist = service.getDentistPatientQuery(token,pageNumber,query)
+        return ResponseEntity.ok(dentist)
+    }
+
     @Operation(summary = "Remove Dentist´s patient")
     @PutMapping("/dentist/Remove/{dentistId}/{patientMedicalRecord}")
     fun removePatient(@PathVariable dentistId: Long,@PathVariable patientMedicalRecord: Int): ResponseEntity<Void> {
