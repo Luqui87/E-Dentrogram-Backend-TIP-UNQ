@@ -86,10 +86,17 @@ class DentistController {
         return ResponseEntity.ok().body(dentist)
     }
 
-    @Operation(summary = "Update dentist tags")
+    @Operation(summary = "Update dentist documents")
     @PatchMapping("/dentist/update/documents")
     fun updateDentistDocuments( @RequestParam("documents") files: List<MultipartFile>, @RequestHeader("Authorization") token: String) : ResponseEntity<DentistDTO> {
         val dentistDTO = dentistService.updateDocuents(files,token)
+        return ResponseEntity.ok().body(dentistDTO)
+    }
+
+    @Operation(summary = "Delete dentist document")
+    @DeleteMapping("/dentist/delete/documents")
+    fun deleteDentistDocument( @RequestParam doc: String, @RequestHeader("Authorization") token: String) : ResponseEntity<DentistDTO> {
+        val dentistDTO = dentistService.deleteDocument(doc,token)
         return ResponseEntity.ok().body(dentistDTO)
     }
 

@@ -240,4 +240,24 @@ class DentistService(
 
         return DentistDTO.fromModel(dentist)
     }
+
+    fun deleteDocument(doc: String, token: String): DentistDTO? {
+        val username = tokenService.extractUsername(token.substringAfter("Bearer "))
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+
+        val dentist = dentistRepository.findByUsername(username)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist")
+
+        val documents = dentist.documents ?: mutableListOf()
+
+        val removed = documents.removeIf { it.fileName == doc }
+
+        if (!removed) {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el documento con nombre: $doc")
+        }
+
+        dentistRepository.save(dentist)
+
+        return DentistDTO.fromModel(dentist)
+    }
 }
