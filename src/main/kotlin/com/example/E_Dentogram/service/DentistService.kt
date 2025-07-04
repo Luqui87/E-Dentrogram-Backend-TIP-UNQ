@@ -3,6 +3,7 @@ package com.example.E_Dentogram.service
 import com.example.E_Dentogram.config.JwtProperties
 import com.example.E_Dentogram.dto.*
 import com.example.E_Dentogram.model.Dentist
+import com.example.E_Dentogram.model.Document
 import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.repository.DentistRepository
 import com.example.E_Dentogram.repository.PatientRepository
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
 
@@ -198,5 +200,28 @@ class DentistService(
         val patientPage = patientRepository.findByDentistUsername(username, pageRequest)
 
         return PatientPaginationDTO.fromModel(patientPage)
+    }
+
+    fun updateDocuents(files : List<MultipartFile>, token: String) : DentistDTO {
+        val username = tokenService.extractUsername(token.substringAfter("Bearer "))
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+
+        val dentist = dentistRepository.findByUsername(username)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist")
+
+        val documents = files.map { file ->
+            Document.DocumentBuilder()
+                .fileName(file.originalFilename ?: "unnamed.pdf")
+                .data(file.bytes)
+                .dentist(dentist)
+                .build()
+        }.toMutableList()
+
+        dentist.documents!!.addAll(documents)
+
+        dentistRepository.save(dentist)
+
+
+        return DentistDTO.fromModel(dentist)
     }
 }

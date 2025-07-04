@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 
 @CrossOrigin(origins = arrayOf("http://localhost:5174"))
 @RestController
@@ -75,6 +76,13 @@ class DentistController {
     fun updateDentistTags(@RequestBody tags: List<String>, @RequestHeader("Authorization") token: String) : ResponseEntity<DentistDTO> {
         val dentist = dentistService.updateTags(tags,token)
         return ResponseEntity.ok().body(dentist)
+    }
+
+    @Operation(summary = "Update dentist tags")
+    @PatchMapping("/dentist/update/documents")
+    fun updateDentistDocuments( @RequestParam("documents") files: List<MultipartFile>, @RequestHeader("Authorization") token: String) : ResponseEntity<DentistDTO> {
+        val dentistDTO = dentistService.updateDocuents(files,token)
+        return ResponseEntity.ok().body(dentistDTO)
     }
 
 }
