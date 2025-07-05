@@ -35,7 +35,7 @@ class WhatsappController {
     fun sendMsgWithFiles(@RequestPart("number") number: String,
                          @RequestPart("message") message: String,
                          @RequestPart("files", required = false ) files: List<MultipartFile>?,
-                         @RequestParam docs: List<String>,
+                         @RequestParam("doc", required = false) docs: List<String>?,
                          @RequestHeader("Authorization") token: String
     ): ResponseEntity<String> {
         val tempFiles = files?.map {
