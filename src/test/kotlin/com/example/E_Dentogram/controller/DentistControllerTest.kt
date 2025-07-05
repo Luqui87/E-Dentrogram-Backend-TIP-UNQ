@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -481,6 +482,259 @@ class DentistControllerTest{
                 .header("Authorization", "Bearer $accessToken"))
             .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isOk)
+    }
+
+
+    @Test
+    fun `should update dentist tags`(){
+        val dentist = Dentist.DentistBuilder()
+            .username("User1")
+            .name("User1_name")
+            .password("password1")
+            .email("User1@gmail.com")
+            .patients(mutableListOf())
+            .build()
+
+        val accessToken = this.getTokenForUser(dentist)
+
+        val body = listOf("Fluor", "Revisión", "Ortodoncia")
+
+        mockMVC.perform(
+            patch("/dentist/update/tags")
+            .header("Authorization", "Bearer $accessToken")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(body)))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.tags", IsCollectionWithSize.hasSize<Array<Any>>(3)))
+    }
+
+    @Test
+    fun `should get no patients`(){
+
+        val dentist = Dentist.DentistBuilder()
+            .username("User100")
+            .name("User100_name")
+            .password("password100")
+            .email("User100@gmail.com")
+            .patients(mutableListOf())
+            .build()
+
+        val patient1 = Patient.PatientBuilder()
+            .medicalRecord(123)
+            .dni(42421645)
+            .name("Lucas Alvarez")
+            .address("Bragado 1413")
+            .birthdate(LocalDate.of(2000, 10, 12))
+            .telephone(1153276406)
+            .email("lucas@mail.com")
+            .dentist(dentist)
+            .build()
+
+        val patient2 = Patient.PatientBuilder()
+            .medicalRecord(124)
+            .dni(42421612)
+            .name("Nicolas Alvarez")
+            .address("Bragado 1413")
+            .birthdate(LocalDate.of(1996, 10, 12))
+            .telephone(1153276406)
+            .email("nicolas@mail.com")
+            .dentist(dentist)
+            .build()
+
+        val accessToken = this.getTokenForUser(dentist)
+
+        val page = 0
+        mockMVC.perform(
+            get("/dentist/patient//$page")
+            .header("Authorization", "Bearer $accessToken"))
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.patients", IsCollectionWithSize.hasSize<Array<Any>>(0)))
+            .andExpect(jsonPath("$.total").value(0))
+    }
+
+    @Test
+    fun `should get one patient`(){
+
+        val dentist = Dentist.DentistBuilder()
+            .username("User1")
+            .name("User1_name")
+            .password("password1")
+            .email("User1@gmail.com")
+            .patients(mutableListOf())
+            .build()
+
+
+        val body = mapOf(
+            "medicalRecord" to "123",
+            "dni" to "42421645",
+            "name" to "Lucas Alvarez",
+            "address" to "Bragado 1413",
+            "birthdate" to "2000-10-12",
+            "telephone" to "1153276406",
+            "email" to "lucas@mail.com"
+        )
+
+        val accessToken = this.getTokenForUser(dentist)
+        val registeredDentist = dentistRepository.findByUsername("User1")!!
+
+        mockMVC.perform(post("/dentist/add/${registeredDentist.id}")
+            .header("Authorization", "Bearer $accessToken")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jacksonObjectMapper().writeValueAsString(body)))
+            .andDo(MockMvcResultHandlers.print())
+            .andReturn()
+
+        val page = 0
+        mockMVC.perform(
+            get("/dentist/patient/$page")
+                .header("Authorization", "Bearer $accessToken"))
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.patients", IsCollectionWithSize.hasSize<Array<Any>>(1)))
+            .andExpect(jsonPath("$.total").value(1))
+    }
+
+    @Test
+    fun `should search and return one matching patient`() {
+        val dentist = Dentist.DentistBuilder()
+            .username("User1")
+            .name("User1_name")
+            .password("password1")
+            .email("User1@gmail.com")
+            .patients(mutableListOf())
+            .build()
+
+        val accessToken = this.getTokenForUser(dentist)
+
+        val registeredDentist = dentistRepository.findByUsername("User1")!!
+
+        val body = mapOf(
+            "medicalRecord" to "123",
+            "dni" to "42421645",
+            "name" to "Lucas Alvarez",
+            "address" to "Bragado 1413",
+            "birthdate" to "2000-10-12",
+            "telephone" to "1153276406",
+            "email" to "lucas@mail.com"
+        )
+
+        mockMVC.perform(
+            post("/dentist/add/${registeredDentist.id}")
+                .header("Authorization", "Bearer $accessToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jacksonObjectMapper().writeValueAsString(body))
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk)
+
+        val query = "Lucas"
+        val page = 0
+
+        mockMVC.perform(
+            get("/dentist/patient/$query/$page")
+                .header("Authorization", "Bearer $accessToken")
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.patients", IsCollectionWithSize.hasSize<Array<Any>>(1)))
+            .andExpect(jsonPath("$.total").value(1))
+    }
+
+
+    @Test
+    fun `should update dentist documents`() {
+        val dentist = Dentist.DentistBuilder()
+            .username("User1")
+            .name("User1_name")
+            .password("password1")
+            .email("User1@gmail.com")
+            .patients(mutableListOf())
+            .documents(mutableListOf())
+            .build()
+
+        val accessToken = this.getTokenForUser(dentist)
+
+        val file1 = MockMultipartFile(
+            "documents", "doc1.pdf", "application/pdf", "Contenido del PDF 1".toByteArray()
+        )
+
+        val file2 = MockMultipartFile(
+            "documents", "doc2.pdf", "application/pdf", "Contenido del PDF 2".toByteArray()
+        )
+
+        mockMVC.perform(
+            multipart("/dentist/update/documents")
+                .file(file1)
+                .file(file2)
+                .with { request ->
+                    request.method = "PATCH" // multipart por defecto usa POST, lo forzamos a PATCH
+                    request
+                }
+                .header("Authorization", "Bearer $accessToken")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.documents", IsCollectionWithSize.hasSize<Array<Any>>(2)))
+    }
+
+    @Test
+    fun `should delete dentist documents`() {
+        val dentist = Dentist.DentistBuilder()
+            .username("User1")
+            .name("User1_name")
+            .password("password1")
+            .email("User1@gmail.com")
+            .patients(mutableListOf())
+            .documents(mutableListOf())
+            .build()
+
+        val accessToken = this.getTokenForUser(dentist)
+
+        val file1 = MockMultipartFile(
+            "documents", "doc1.pdf", "application/pdf", "Contenido del PDF 1".toByteArray()
+        )
+
+
+
+        mockMVC.perform(
+            multipart("/dentist/update/documents")
+                .file(file1)
+                .with { request ->
+                    request.method = "PATCH"
+                    request
+                }
+                .header("Authorization", "Bearer $accessToken")
+        )
+            .andReturn()
+
+        mockMVC.perform(
+            delete("/dentist/delete/documents")
+                .header("Authorization", "Bearer $accessToken")
+                .param("doc", "doc1.pdf")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.documents", IsCollectionWithSize.hasSize<Array<Any>>(0)))
+    }
+
+    @Test
+    fun `should return 404 when deleting non-existent document`() {
+        val dentist = Dentist.DentistBuilder()
+            .username("User404")
+            .name("User404_name")
+            .password("password404")
+            .email("User404@gmail.com")
+            .patients(mutableListOf())
+            .documents(mutableListOf()) // No documentos
+            .build()
+
+        val accessToken = this.getTokenForUser(dentist)
+
+        mockMVC.perform(
+            delete("/dentist/delete/documents")
+                .header("Authorization", "Bearer $accessToken")
+                .param("doc", "nonexistent.pdf")
+        )
+            .andExpect(status().isNotFound)
     }
 
 }
