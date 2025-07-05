@@ -1,9 +1,12 @@
 package com.example.E_Dentogram.controller
 
 import com.example.E_Dentogram.dto.AuthenticationResponse
+import com.example.E_Dentogram.dto.PatientDTO
 import com.example.E_Dentogram.model.Dentist
 import com.example.E_Dentogram.model.Patient
+import com.example.E_Dentogram.model.PatientJournal
 import com.example.E_Dentogram.repository.DentistRepository
+import com.example.E_Dentogram.repository.PatientJournalRepository
 import com.example.E_Dentogram.repository.PatientRepository
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.hamcrest.collection.IsCollectionWithSize
@@ -26,7 +29,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDate
-
+import java.time.LocalDateTime
 
 
 @Testcontainers
@@ -42,6 +45,9 @@ class PatientControllerTest {
 
     @Autowired
     private lateinit var dentistRepository: DentistRepository
+
+    @Autowired
+    private lateinit var patientJournalRepository: PatientJournalRepository
 
     companion object {
         @Container
@@ -228,7 +234,7 @@ class PatientControllerTest {
     }
 
     @Test
-    fun `should  get Patient Records`() {
+    fun `should get Patient Records`() {
         val token = getTokenForUser("dentist1", "dentist1_name","password1","User1@gmail.com")
 
         var dentist = dentistRepository.findByUsername("dentist1")
@@ -261,6 +267,141 @@ class PatientControllerTest {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.records", IsCollectionWithSize.hasSize<Array<Any>>(0)))
     }
+
+    @Test
+    fun `should get patient journal`() {
+        val token = getTokenForUser("dentist1", "dentist1_name", "password1", "user1@gmail.com")
+
+        var dentist = dentistRepository.findByUsername("dentist1")
+
+
+        val patient = Patient.PatientBuilder()
+            .medicalRecord(123)
+            .dni(42421645)
+            .name("Lucas Alvarez")
+            .address("Bragado 1413")
+            .birthdate(LocalDate.of(2000, 10, 12))
+            .telephone(1153276406)
+            .email("lucas@mail.com")
+            .dentist(dentist!!)
+            .build()
+
+        patientRepository.save(patient)
+
+        val journal1 = PatientJournal.PatientJournalBuilder()
+            .log("Nota 1")
+            .date(LocalDateTime.now().minusDays(1))
+            .tags(setOf("Control"))
+            .patient(patient)
+            .build()
+
+        val journal2 = PatientJournal.PatientJournalBuilder()
+            .log("Nota 2")
+            .date(LocalDateTime.now().minusDays(2))
+            .tags(setOf("Revisión"))
+            .patient(patient)
+            .build()
+
+        patientJournalRepository.saveAll(listOf(journal1, journal2))
+
+        mockMVC.perform(
+            get("/patient/journal/123/0")
+                .header("Authorization", "Bearer $token")
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.journal", IsCollectionWithSize.hasSize<Array<Any>>(2)))
+            .andExpect(jsonPath("$.total").value(2))
+            .andExpect(jsonPath("$.pageSize").value(10))
+            .andExpect(jsonPath("$.journal[0].log").value("Nota 1"))
+            .andExpect(jsonPath("$.journal[1].log").value("Nota 2"))
+    }
+
+    @Test
+    fun `should add a journal entry to the patient`() {
+        val token = getTokenForUser("dentist1", "dentist1_name", "password1", "user1@gmail.com")
+
+        var dentist = dentistRepository.findByUsername("dentist1")
+
+
+        val patient = Patient.PatientBuilder()
+            .medicalRecord(123)
+            .dni(42421645)
+            .name("Lucas Alvarez")
+            .address("Bragado 1413")
+            .birthdate(LocalDate.of(2000, 10, 12))
+            .telephone(1153276406)
+            .email("lucas@mail.com")
+            .dentist(dentist!!)
+            .build()
+
+        patientRepository.save(patient)
+
+        val requestBody = mapOf(
+            "log" to "Nueva entrada al journal",
+            "tags" to listOf("Urgencia", "Consulta"),
+            "date" to LocalDateTime.now().toString()
+        )
+
+        mockMVC.perform(
+            post("/patient/journal/add/123")
+                .header("Authorization", "Bearer $token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jacksonObjectMapper().writeValueAsString(requestBody))
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.log").value("Nueva entrada al journal"))
+            .andExpect(jsonPath("$.tags", IsCollectionWithSize.hasSize<Array<Any>>(2)))
+    }
+
+    @Test
+    fun `should update patient successfully`() {
+        val token = getTokenForUser("dentist1", "dentist1_name", "password1", "user1@gmail.com")
+
+        var dentist = dentistRepository.findByUsername("dentist1")!!
+
+        val patient = Patient.PatientBuilder()
+            .medicalRecord(123)
+            .dni(42421645)
+            .name("Lucas Alvarez")
+            .address("Bragado 1413")
+            .birthdate(LocalDate.of(2000, 10, 12))
+            .telephone(1153276406)
+            .email("lucas@mail.com")
+            .dentist(dentist)
+            .build()
+
+        patientRepository.save(patient)
+
+        val body = mapOf(
+            "medicalRecord" to "123",
+            "dni" to "42421645",
+            "name" to "Lucas Modificado",
+            "address" to "Nueva dirección 456",
+            "birthdate" to "2000-10-12",
+            "telephone" to "1144556677",
+            "email" to "nuevo@mail.com"
+        )
+
+
+        mockMVC.perform(
+            put("/patient/update")
+                .header("Authorization", "Bearer $token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jacksonObjectMapper().writeValueAsString(body))
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.medicalRecord").value(123))
+            .andExpect(jsonPath("$.name").value("Lucas Modificado"))
+            .andExpect(jsonPath("$.address").value("Nueva dirección 456"))
+            .andExpect(jsonPath("$.telephone").value(1144556677))
+            .andExpect(jsonPath("$.email").value("nuevo@mail.com"))
+    }
+
+
+
 
     @Nested
     @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

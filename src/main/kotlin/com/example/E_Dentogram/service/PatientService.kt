@@ -3,7 +3,6 @@ package com.example.E_Dentogram.service
 import com.example.E_Dentogram.dto.*
 import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.model.PatientJournal
-import com.example.E_Dentogram.model.Tag
 import com.example.E_Dentogram.repository.PatientJournalRepository
 import com.example.E_Dentogram.repository.PatientRecordRepository
 import com.example.E_Dentogram.repository.PatientRepository
