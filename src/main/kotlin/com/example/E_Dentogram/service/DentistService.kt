@@ -7,6 +7,7 @@ import com.example.E_Dentogram.model.Document
 import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.repository.DentistRepository
 import com.example.E_Dentogram.repository.PatientRepository
+import com.example.E_Dentogram.repository.TurnRepository
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import jakarta.annotation.Generated
 import org.springframework.beans.factory.annotation.Autowired
@@ -42,6 +43,9 @@ class DentistService(
     @Autowired
     lateinit var patientRepository : PatientRepository
 
+    @Autowired
+    lateinit var turnRepository: TurnRepository
+
 
     @Transactional(readOnly=true)
     fun allDentist(): List<DentistSimpleDTO>? {
@@ -73,11 +77,13 @@ class DentistService(
         orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist") }
 
         try {
+            turnRepository.deleteAllByPatient_MedicalRecord(patientMedicalRecord)
+
             dentist.removePatient(patientMedicalRecord)
 
             dentistRepository.save(dentist)
-        }catch (e: Exception) {
-            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Failed to save changes: ${e.message}")
+        } catch (e: Exception) {
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to save changes: ${e.message}")
         }
 
     }

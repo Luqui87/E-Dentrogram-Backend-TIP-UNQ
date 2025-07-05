@@ -13,4 +13,6 @@ interface TurnRepository : JpaRepository<Turn, Int> {
     fun findByDateBetween(start: LocalDateTime, end: LocalDateTime): List<Turn>
 
     fun findByDateBefore(dateTime: LocalDateTime): List<Turn>
+
+    fun deleteAllByPatient_MedicalRecord(patientId: Int)
 }
