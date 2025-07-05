@@ -11,4 +11,6 @@ interface PatientRepository : JpaRepository<Patient, Int> {
 
     fun findByDentistUsername(username: String, pageable: Pageable): Page<Patient>
 
+    fun findByDentistUsernameAndNameContainingIgnoreCase(username: String, name: String, pageable: Pageable): Page<Patient>
+
 }

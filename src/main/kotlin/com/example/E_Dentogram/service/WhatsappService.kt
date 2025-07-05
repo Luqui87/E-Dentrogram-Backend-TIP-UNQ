@@ -1,5 +1,8 @@
 package com.example.E_Dentogram.service
 
+import com.example.E_Dentogram.repository.DentistRepository
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.client.MultipartBodyBuilder
@@ -15,6 +18,12 @@ import java.nio.file.Files
 @Service
 @Transactional
 class WhatsappService {
+
+    @Autowired
+    private lateinit var dentistRepository: DentistRepository
+
+    @Autowired
+    private lateinit var tokenService: TokenService
 
     private val webClient = WebClient.builder()
         .baseUrl("http://localhost:3001") //.baseUrl("http://whatsapp:3001") // nombre del servicio en Docker
@@ -49,10 +58,25 @@ class WhatsappService {
             .block() ?: throw RuntimeException("No se recibió el QR")
     }
 
-    fun sendMsgWithFiles(number: String, message: String, files: List<File>): String {
+    fun sendMsgWithFiles(
+        number: String,
+        message: String,
+        files: List<File>,
+        docs: List<String>?,
+        token: String
+    ): String {
         val multipartBuilder = MultipartBodyBuilder()
+
+
+
         multipartBuilder.part("number", number)
         multipartBuilder.part("message", message)
+
+        val username = tokenService.extractUsername(token.removePrefix("Bearer "))
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+
+        val dentist = dentistRepository.findByUsername(username)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist")
 
         files.forEach { file ->
             multipartBuilder
@@ -60,6 +84,28 @@ class WhatsappService {
                 .filename(file.name)
                 .header("Content-Type", Files.probeContentType(file.toPath()) ?: "application/octet-stream")
         }
+
+        val selectedDocs = if (!docs.isNullOrEmpty()) {
+            dentist.documents?.filter { it.fileName in docs } ?: emptyList()
+        } else {
+            emptyList()
+        }
+
+        selectedDocs.forEach { doc ->
+            val resource = object : ByteArrayResource(doc.data) {
+                override fun getFilename(): String = doc.fileName
+            }
+
+            multipartBuilder
+                .part("files", resource)
+                .header("Content-Type", "application/octet-stream")
+                .filename(doc.fileName)
+
+            multipartBuilder.part("docs", doc.fileName)
+        }
+
+        println("Docs recibidos: $docs")
+        println("Selected docs encontrados: ${selectedDocs.map { it.fileName }}")
 
         return webClient.post()
             .uri("/send-multiple-files")

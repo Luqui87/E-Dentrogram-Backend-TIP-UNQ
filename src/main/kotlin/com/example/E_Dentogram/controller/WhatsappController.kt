@@ -32,14 +32,19 @@ class WhatsappController {
     }
 
     @PostMapping("/send-multiple-files", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    fun sendMsgWithFiles(@RequestPart("number") number: String, @RequestPart("message") message: String, @RequestPart("files", required = false) files: List<MultipartFile>?): ResponseEntity<String> {
+    fun sendMsgWithFiles(@RequestPart("number") number: String,
+                         @RequestPart("message") message: String,
+                         @RequestPart("files", required = false ) files: List<MultipartFile>?,
+                         @RequestParam("doc", required = false) docs: List<String>?,
+                         @RequestHeader("Authorization") token: String
+    ): ResponseEntity<String> {
         val tempFiles = files?.map {
             File.createTempFile("upload-", it.originalFilename ?: ".tmp").apply {
                 it.transferTo(this)
             }
         } ?: emptyList()
 
-        val response = service.sendMsgWithFiles(number, message, tempFiles)
+        val response = service.sendMsgWithFiles(number, message, tempFiles, docs, token)
 
         tempFiles.forEach { it.delete() }
 
