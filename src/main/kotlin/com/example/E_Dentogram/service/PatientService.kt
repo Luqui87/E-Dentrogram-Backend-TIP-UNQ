@@ -1,9 +1,10 @@
 package com.example.E_Dentogram.service
 
-import com.example.E_Dentogram.dto.PatientDTO
-import com.example.E_Dentogram.dto.PatientRecordDTO
+import com.example.E_Dentogram.dto.*
 import com.example.E_Dentogram.model.Patient
-import com.example.E_Dentogram.model.PatientRecord
+import com.example.E_Dentogram.model.PatientJournal
+import com.example.E_Dentogram.model.Tag
+import com.example.E_Dentogram.repository.PatientJournalRepository
 import com.example.E_Dentogram.repository.PatientRecordRepository
 import com.example.E_Dentogram.repository.PatientRepository
 import jakarta.annotation.Generated
@@ -25,6 +26,9 @@ class PatientService {
 
     @Autowired
     lateinit var patientRecordRepository : PatientRecordRepository
+
+    @Autowired
+    lateinit var patientJournalRepository: PatientJournalRepository
 
     @Transactional(readOnly=true)
     fun allPatients(): List<Patient>? {
@@ -60,6 +64,51 @@ class PatientService {
 
         val patientRecordDTO = PatientRecordDTO(page.content,page.totalElements )
         return patientRecordDTO
+    }
+
+    @Transactional(readOnly = true)
+    fun getPatientJournal(patientMedicalRecord: Int, pageNumber: Int): JournalDTO {
+        val pageSize = 10
+        val pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "date"))
+        val page = patientJournalRepository.findByPatient_MedicalRecord(patientMedicalRecord, pageRequest)
+
+        return JournalDTO(journal = page.content, total = page.totalElements, pageSize =  pageSize)
+    }
+
+    fun postPatientJournal(patientMedicalRecord: Int, patientJournalRequest: PatientJournalRequest): PatientJournal {
+        val patient = patientRepository.findById(patientMedicalRecord)
+            .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist") }
+
+
+        val patientJournal = PatientJournal.PatientJournalBuilder()
+            .date(patientJournalRequest.date)
+            .tags(patientJournalRequest.tags)
+            .log(patientJournalRequest.log)
+            .patient(patient)
+            .build()
+
+        if (patient.journal == null) {
+            patient.journal = mutableListOf()
+        }
+
+        patientJournalRepository.save(patientJournal)
+
+        patient.journal!!.add(patientJournal)
+
+        patientRepository.save(patient)
+
+        return patientJournal
+    }
+
+    fun updatePatient(patientDTO: PatientDTO): PatientDTO? {
+        val patient = patientRepository.findById(patientDTO.medicalRecord)
+            .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "This patient does not exist") }
+
+        patient.update(patientDTO.telephone,patientDTO.name,patientDTO.email,patientDTO.address)
+
+        patientRepository.save(patient)
+
+        return PatientDTO.fromModel(patient)
     }
 
 

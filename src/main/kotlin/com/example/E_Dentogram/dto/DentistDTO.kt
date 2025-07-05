@@ -8,7 +8,9 @@ class DentistDTO(
     val name: String,
     val username: String,
     val email: String,
-    val patients: List<PatientDTO>
+    val patients: List<PatientDTO>,
+    val tags: List<String>,
+    val documents : List<String>
 ){
 
     companion object{
@@ -29,7 +31,9 @@ class DentistDTO(
                 username = dentist.username!!,
                 name  = dentist.name!!,
                 email = dentist.email!!,
-                patients = patientDTOs
+                patients = patientDTOs,
+                tags = dentist.tags,
+                documents = dentist.documents!!.map { document -> document.fileName }
             )
             return dentistdto
         }

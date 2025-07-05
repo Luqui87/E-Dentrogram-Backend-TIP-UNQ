@@ -3,19 +3,22 @@ package com.example.E_Dentogram.service
 import com.example.E_Dentogram.config.JwtProperties
 import com.example.E_Dentogram.dto.*
 import com.example.E_Dentogram.model.Dentist
+import com.example.E_Dentogram.model.Document
 import com.example.E_Dentogram.model.Patient
 import com.example.E_Dentogram.repository.DentistRepository
 import com.example.E_Dentogram.repository.PatientRepository
+import com.example.E_Dentogram.repository.TurnRepository
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
-import com.google.api.client.http.javanet.NetHttpTransport
-import com.google.api.client.json.gson.GsonFactory
 import jakarta.annotation.Generated
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
 
@@ -39,6 +42,9 @@ class DentistService(
     lateinit var dentistRepository : DentistRepository
     @Autowired
     lateinit var patientRepository : PatientRepository
+
+    @Autowired
+    lateinit var turnRepository: TurnRepository
 
 
     @Transactional(readOnly=true)
@@ -71,11 +77,13 @@ class DentistService(
         orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist") }
 
         try {
+            turnRepository.deleteAllByPatient_MedicalRecord(patientMedicalRecord)
+
             dentist.removePatient(patientMedicalRecord)
 
             dentistRepository.save(dentist)
-        }catch (e: Exception) {
-            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Failed to save changes: ${e.message}")
+        } catch (e: Exception) {
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to save changes: ${e.message}")
         }
 
     }
@@ -172,5 +180,90 @@ class DentistService(
         else{
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
         }
+    }
+
+    fun updateTags(tags: List<String>, token: String): DentistDTO? {
+        val username = tokenService.extractUsername(token.substringAfter("Bearer "))
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+
+        val dentist = dentistRepository.findByUsername(username)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist")
+
+        dentist.tags = tags
+
+        dentistRepository.save(dentist)
+
+        return DentistDTO.fromModel(dentist)
+    }
+
+    @Transactional(readOnly = true)
+    fun getDentistPatient(token: String, pageNumber: Int): PatientPaginationDTO {
+        val username = tokenService.extractUsername(token.substringAfter("Bearer "))
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+
+        val pageSize = 10
+        val pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by("name").ascending())
+        val patientPage = patientRepository.findByDentistUsername(username, pageRequest)
+
+        return PatientPaginationDTO.fromModel(patientPage)
+    }
+
+
+    fun getDentistPatientQuery(token: String, pageNumber: Int, query: String): PatientPaginationDTO? {
+        if (query.isBlank()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Search query cannot be blank")
+        }
+
+        val username = tokenService.extractUsername(token.substringAfter("Bearer "))
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+
+        val pageSize = 10
+        val pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by("name").ascending())
+        val patientPage = patientRepository.findByDentistUsernameAndNameContainingIgnoreCase(username, query, pageRequest)
+
+        return PatientPaginationDTO.fromModel(patientPage)
+    }
+
+    fun updateDocuents(files : List<MultipartFile>, token: String) : DentistDTO {
+        val username = tokenService.extractUsername(token.substringAfter("Bearer "))
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+
+        val dentist = dentistRepository.findByUsername(username)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist")
+
+        val documents = files.map { file ->
+            Document.DocumentBuilder()
+                .fileName(file.originalFilename ?: "unnamed.pdf")
+                .data(file.bytes)
+                .dentist(dentist)
+                .build()
+        }.toMutableList()
+
+        dentist.documents!!.addAll(documents)
+
+        dentistRepository.save(dentist)
+
+
+        return DentistDTO.fromModel(dentist)
+    }
+
+    fun deleteDocument(doc: String, token: String): DentistDTO? {
+        val username = tokenService.extractUsername(token.substringAfter("Bearer "))
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+
+        val dentist = dentistRepository.findByUsername(username)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "This dentist does not exist")
+
+        val documents = dentist.documents ?: mutableListOf()
+
+        val removed = documents.removeIf { it.fileName == doc }
+
+        if (!removed) {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el documento con nombre: $doc")
+        }
+
+        dentistRepository.save(dentist)
+
+        return DentistDTO.fromModel(dentist)
     }
 }

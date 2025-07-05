@@ -1,10 +1,13 @@
-const { Client } = require('whatsapp-web.js');
+const { Client,MessageMedia } = require('whatsapp-web.js');
 const express = require('express');
 const qrcode = require('qrcode-terminal');
 const puppeteer = require('puppeteer');
+const mime = require('mime-types');
+const multer = require('multer');
+const upload = multer();
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
 
 let lastQR = null;
 let isReady = false;
@@ -50,6 +53,35 @@ app.get('/qr', (req, res) => {
         res.status(404).send({ error: 'QR no disponible' });
     }
 });
+
+
+app.post('/send-multiple-files', upload.array('files'), async (req, res) => {
+    const { number, message } = req.body;
+    const chatId = `${number}@c.us`;
+
+    try {
+
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const mimeType = file.mimetype;
+                const base64 = file.buffer.toString('base64');
+                const media = new MessageMedia(mimeType, base64, file.originalname);
+                await client.sendMessage(chatId, media);
+            }
+        }
+
+        if (message) {
+            await client.sendMessage(chatId, message);
+        }
+
+        res.status(200).send({ status: 'Mensaje y archivos enviados' });
+
+    } catch (err) {
+        console.error('Error al enviar mensaje:', err);
+        res.status(500).send({ error: err.message });
+    }
+});
+
 
 const PORT = 3001;
 app.listen(PORT, () => {
